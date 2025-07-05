@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.NetCore" Version="1.8.8" />
+    <ProjectReference Include="..\..\TSS.NET\TSS.Net\TSS.Net.csproj" />
+    <ProjectReference Include="..\TestSubstrate\TestSubstrate.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>TpmProxy</AssemblyName>
+    <WarningLevel>4</WarningLevel>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Version>20210628</Version>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NixTarget>false</NixTarget>
+	<NixTarget Condition="$(RuntimeIdentifier.Contains('linux')) Or '$(OS)' == 'Unix' Or '$(OS)' == 'Linux'">true</NixTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(NixTarget)">
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="!($(NixTarget))">
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+</Project>
+

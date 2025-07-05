@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\TSS.NET\TSS.Net\TSS.Net.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Tpm2TesterFramework</AssemblyName>
+    <TargetFrameworks>net472;netcoreapp2.1</TargetFrameworks>
+    <WarningLevel>4</WarningLevel>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Version>20210628</Version>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NixTarget>false</NixTarget>
+    <NixTarget Condition="$(RuntimeIdentifier.Contains('linux')) Or '$(OS)' == 'Unix' Or '$(OS)' == 'Linux'">true</NixTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+<!-- 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+-->
+
+<!-- Pre- and post-build tasks (Other similar extension points exist, see Microsoft.Common.targets)
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+-->
+    
+</Project>
