@@ -35,6 +35,7 @@ class Samples {
         ~Samples();
 
         // The following methods demonstrate how TSS.C++ is used to perform TPM functions.
+        void RunAllSamplesAT();
         void RunAllSamples();
         void RunDocSamples();
         void ArrayParameters();

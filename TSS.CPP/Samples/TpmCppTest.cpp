@@ -18,6 +18,7 @@ using namespace std;
 using namespace TpmCpp;
 
 bool UseSimulator = true;
+bool UseMySamples = true;
 
 static bool
 CmdLine_IsOpt(
@@ -93,11 +94,16 @@ int main(int argc, char *argv[])
     if (res != 0)
         return res;
 
-    try {
+    try 
+    {
         Samples s;
-        s.RunAllSamples();
+        if (UseMySamples)
+            s.RunAllSamplesAT();
+        else
+            s.RunAllSamples();        
     }
-    catch (const runtime_error& exc) {
+    catch (const runtime_error& exc) 
+    {
         cerr << "TpmCppTester: " << exc.what() << "\nExiting...\n";
     }
 

@@ -23,32 +23,32 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TpmCppTest</RootNamespace>
     <ProjectName>TSS.CPP Samples</ProjectName>
-    <WindowsTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -124,7 +124,7 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include;..\Src\Tpm;..\Src\Tpm\TpmBaseClass;..\Src\Tpm\TpmClockReader;..\Src\Tpm\TpmCounters;..\Src\Tpm\TpmCounters\TpmMonotonikCounter;..\Src\Tpm\TpmCounters\TpmOrdinaryCounter;..\Src\Tpm\TpmCounters\TpmWatchdogCounter;..\Src\Tpm\TpmHelpers;..\Src\Tpm\TpmIO;..\Src\Tpm\TpmIO\TpmReader;..\Src\Tpm\TpmIO\TpmWriter;..\Src\Tpm\TpmSecurity;..\Src\Tpm\TpmSecurity\TpmCrypto;..\Src\Tpm\TpmSecurity\TpmHash;..\Src\Tpm\TpmSecurity\TpmRandom;..\Src\Tpm\TpmSecurity\TpmSignature;..\Src\Tpm\TpmSharedDevice;..\Src\Tpm\TpmSlot;..\Src\Tpm\TpmSlot\TpmSlotManager;..\Src\Tpm\TpmSlot\TpmSlotReader;..\Src\Tpm\TpmSlot\TpmSlotSecurity;..\Src\Tpm\TpmSlot\TpmSlotWriter;..\Src\Tpm\TpmTimers;..\Src\Tpm\TpmTimers\TpmMonotonikTimer;..\Src\Tpm\TpmTimers\TpmOrdinaryTimer;..\Src\Tpm\TpmTimers\TpmWatchdogTimer;..\Src\Tpm\TpmUtils;..\Src\Tpm\TpmSharedFiles</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4091</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -187,6 +187,9 @@
     <ClInclude Include="TpmConfig.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\main.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="DocSamples.cpp" />
     <ClCompile Include="Samples.cpp" />
     <ClCompile Include="stdafx.cpp">
