@@ -3379,9 +3379,135 @@ void Samples::BoundSession()
 // ================================================================================
 // ================================================================================
 
+void clearStringstream(std::stringstream& ss)
+{
+    ss.str("");
+    ss.clear();
+}
+
 #include "TpmSharedDevice.h"
+#include "TpmClockReader.h"
 void Samples::RunAllSamplesAT()
 {
-    RunAllSamples();
+    std::stringstream ss;
+    std::ostringstream oss;
+
+    system("cls");
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    CTpmSharedDevice* pTpmSharedDevice = new CTpmSharedDevice();
+    bool startHealthCheckLoop = false;
+    {
+        // recovery callback
+        pTpmSharedDevice->SetRecoverCallback([](const std::string& msg, int attempt) {
+            std::cout << "[CALLBACK] (try #" << attempt << ") >> " << msg << std::endl;
+            });
+
+        // initialize
+        if (!pTpmSharedDevice->Initialize())
+        {
+            std::cerr << "TPM initialize failed." << std::endl;
+            return;
+        }
+
+        pTpmSharedDevice->GetTpm();
+        pTpmSharedDevice->GetDevice();
+
+        // tpm check
+        if (!pTpmSharedDevice->IsTpmAvailable())
+        {
+            std::cerr << "TPM is not available." << std::endl;
+            return;
+        }
+
+        if (startHealthCheckLoop)
+        {
+            // health-check thread
+            pTpmSharedDevice->StartHealthCheckLoop(5);
+
+            std::this_thread::sleep_for(std::chrono::seconds(6));
+
+            // health-check thread (end)
+            pTpmSharedDevice->StopHealthCheckLoop();
+        }
+    }
+
+    CTpmClockReader* pTpmClockReader = new CTpmClockReader(pTpmSharedDevice);
+    bool ignoreResetClockFailure = true;
+    bool resetClockExampleEnabled = false;
+    {
+        pTpmClockReader->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError) 
+                std::cerr << msg << std::endl;
+            else 
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmClockReader->Initialize())
+        {            
+            std::cerr << "Failed to initialize TPM Clock Reader." << std::endl;
+            return;
+        }
+
+        if (!pTpmClockReader->ReadClock())
+        {
+            std::cerr << "Failed to read TPM clock." << std::endl;
+            return;
+        }
+
+        clearStringstream(ss);
+        ss << "TPM Clock Time            : " << pTpmClockReader->GetClockTime();
+        pTpmClockReader->Log(ss.str());
+
+        clearStringstream(ss);
+        ss << "TPM Clock Time (AsString) : " << pTpmClockReader->GetClockTimeAsString();
+        pTpmClockReader->Log(ss.str());
+
+        if (resetClockExampleEnabled)
+        {
+            clearStringstream(ss);
+            ss << std::endl << "Performing power-cycle based clock reset..." << std::endl;
+            pTpmClockReader->Log(ss.str());
+
+            if (!pTpmClockReader->ResetClock(false))
+            {
+                if (ignoreResetClockFailure)
+                {
+                    clearStringstream(ss);
+                    ss << "Reset TPM clock failure reiceved but will be ignored..." << std::endl;
+                    pTpmClockReader->Log(ss.str());
+                }
+                else
+                {
+                    clearStringstream(ss);
+                    ss << "Failed to reset TPM clock." << std::endl;
+                    pTpmClockReader->Log(ss.str(), true);
+                }
+                if (!ignoreResetClockFailure)
+                    return;
+            }
+
+            if (!pTpmClockReader->ReadClock())
+            {
+                clearStringstream(ss);
+                ss << "Failed to read TPM clock." << std::endl;
+                pTpmClockReader->Log(ss.str(), true);
+                return;
+            }
+
+            clearStringstream(ss);
+            ss << "TPM Clock Time            : " << pTpmClockReader->GetClockTime();
+            pTpmClockReader->Log(ss.str());
+
+            clearStringstream(ss);
+            ss << "TPM Clock Time (AsString) : " << pTpmClockReader->GetClockTimeAsString();
+            pTpmClockReader->Log(ss.str());
+        }
+    }
+
+    delete pTpmClockReader;
+
+    delete pTpmSharedDevice;
 
 } // Samples::RunAllSamplesAT()

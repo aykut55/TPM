@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="DocSamples.cpp" />
+    <ClCompile Include="Samples.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="TpmConfig.cpp" />
+    <ClCompile Include="TpmCppTest.cpp" />
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.cpp">
+      <Filter>Src\Tpm\TpmSharedDevice</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmBaseClass\TpmBaseClass.cpp">
+      <Filter>Src\Tpm\TpmBaseClass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmClockReader\TpmClockReader.cpp">
+      <Filter>Src\Tpm\TpmClockReader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.cpp">
+      <Filter>Src\Tpm\TpmSharedFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.cpp">
+      <Filter>Src\Tpm\TpmSharedFiles</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Samples.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TpmConfig.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.h">
+      <Filter>Src\Tpm\TpmSharedDevice</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmBaseClass\TpmBaseClass.h">
+      <Filter>Src\Tpm\TpmBaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmClockReader\TpmClockReader.h">
+      <Filter>Src\Tpm\TpmClockReader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.h">
+      <Filter>Src\Tpm\TpmSharedFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.h">
+      <Filter>Src\Tpm\TpmSharedFiles</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="TpmSharedDevice">
+      <UniqueIdentifier>{9fafe005-3411-4b8a-ae16-9e31c41304e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src">
+      <UniqueIdentifier>{7648ce4c-927a-44da-a392-b856287ab65c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm">
+      <UniqueIdentifier>{c1f6c5d1-d8ea-4698-a224-bde8e927e4b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmBaseClass">
+      <UniqueIdentifier>{b15c989b-bfa0-41dc-a789-f4f3d3c4f5a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmClockReader">
+      <UniqueIdentifier>{8076c0e4-1396-41ac-8282-bc652f2db24d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmCounters">
+      <UniqueIdentifier>{b3156a19-566f-4a4f-a328-ccf16afa93ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmIO">
+      <UniqueIdentifier>{84d90359-6ffd-4513-a2c0-b81a7c49af96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity">
+      <UniqueIdentifier>{cfab1049-3e1c-44bf-9b88-73980d81fbfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSharedDevice">
+      <UniqueIdentifier>{caf2f514-ffa8-4503-8ed6-57600d915794}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSlot">
+      <UniqueIdentifier>{59dbf45f-b08f-412d-b4df-e5ec2c24b913}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmTimers">
+      <UniqueIdentifier>{1ec15aba-94ad-42d8-b144-09e1a714b6f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmUtils">
+      <UniqueIdentifier>{fcea1446-62c4-46f3-a410-2ace680ac992}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmCounters\TpmMonotonikCounter">
+      <UniqueIdentifier>{68411411-0c12-4e4f-9cea-6cd8f16e87da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmCounters\TpmOrdinaryCounter">
+      <UniqueIdentifier>{448fa575-dca7-4c01-b137-968f27ac72b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmCounters\TpmWatchdogCounter">
+      <UniqueIdentifier>{c7bf6e37-2303-4e99-91d6-24d1abad22ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmIO\TpmReader">
+      <UniqueIdentifier>{855a0226-968d-48ff-b083-b1082f74d731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmIO\TpmWriter">
+      <UniqueIdentifier>{c63ad259-ed66-42cb-a9df-3927c68d1884}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity\TpmCrypto">
+      <UniqueIdentifier>{e5f66303-6a6f-4a67-968c-c1f63631df74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity\TpmHash">
+      <UniqueIdentifier>{0eddb1e8-2ea8-4e5a-81c9-1e9a45293c00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity\TpmRandom">
+      <UniqueIdentifier>{1d63caba-126a-4939-9a46-8827b4f9e3e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity\TpmSignature">
+      <UniqueIdentifier>{36450da2-6932-499f-ab6b-5b2b7f073fff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSlot\TpmSlotManager">
+      <UniqueIdentifier>{de82ef58-b663-4803-95b3-0c4790f6b363}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSlot\TpmSlotReader">
+      <UniqueIdentifier>{9019555d-fd1d-42eb-88fa-87f725f8bfa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSlot\TpmSlotSecurity">
+      <UniqueIdentifier>{285a21a4-0b47-452e-a604-44f331be861a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSlot\TpmSlotWriter">
+      <UniqueIdentifier>{ef9367a5-7ab1-4668-af07-380b5f1966d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmTimers\TpmMonotonikTimer">
+      <UniqueIdentifier>{c923bf0d-0f7a-44ad-8a2a-7e6e91891745}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmTimers\TpmOrdinaryTimer">
+      <UniqueIdentifier>{b53a54fb-9aa3-40ab-8912-4d0d8083c54e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmTimers\TpmWatchdogTimer">
+      <UniqueIdentifier>{9b73927b-4bd9-4108-92e6-da44487f2b7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSharedFiles">
+      <UniqueIdentifier>{6b9ab263-98e1-4f40-b166-ab5f7fc65a92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\TpmHelpers">
+      <UniqueIdentifier>{59c160fa-66f5-45e5-a9c3-99b5f1ff9707}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

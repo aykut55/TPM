@@ -1,8 +1,8 @@
-﻿#include "TpmBaseClass.h"
+﻿#include "TpmSharedFiles.h"
 
 #include <iostream>
 
-CTpmBaseClass::~CTpmBaseClass()
+CTpmSharedFiles::~CTpmSharedFiles()
 {
     try 
     {
@@ -14,7 +14,7 @@ CTpmBaseClass::~CTpmBaseClass()
     }
 }
 
-CTpmBaseClass::CTpmBaseClass()
+CTpmSharedFiles::CTpmSharedFiles()
 {
     try 
     {

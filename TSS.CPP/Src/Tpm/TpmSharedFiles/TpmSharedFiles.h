@@ -6,12 +6,12 @@
 #include <thread>
 #include <atomic>
 
-class CTpmBaseClass 
+class CTpmSharedFiles
 {
 
 public:
-    virtual ~CTpmBaseClass();
-             CTpmBaseClass();
+    virtual ~CTpmSharedFiles();
+             CTpmSharedFiles();
 
 protected:
 

@@ -182,12 +182,32 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Src\Tpm\TpmBaseClass\TpmBaseClass.h" />
+    <ClInclude Include="..\Src\Tpm\TpmClockReader\TpmClockReader.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.h" />
     <ClInclude Include="Samples.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TpmConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmBaseClass\TpmBaseClass.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmClockReader\TpmClockReader.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="DocSamples.cpp" />
