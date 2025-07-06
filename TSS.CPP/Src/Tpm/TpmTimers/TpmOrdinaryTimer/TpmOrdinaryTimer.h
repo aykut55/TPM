@@ -30,12 +30,15 @@ public:
     bool              ResetWatchdogCounter(UINT32 nvIndex);
     bool              ReadWatchdogCounter(UINT32 nvIndex, UINT64& value);
     bool              WriteWatchdogCounter(UINT32 nvIndex, UINT64& value);
+    bool              IncrementWatchdogCounter(UINT32 nvIndex, UINT64& value);
+
     bool              OrdinaryDefineWatchdogCounter(void);
     bool              OrdinaryUndefineWatchdogCounter(void);
     bool              InitWatchdogCounter(void);
     bool              ResetWatchdogCounter(void);
     bool              ReadWatchdogCounter(UINT64& value);
     bool              WriteWatchdogCounter(UINT64& value);
+    bool              IncrementWatchdogCounter(UINT64& value);
 
 protected:
 

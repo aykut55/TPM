@@ -789,6 +789,7 @@ bool CTpmOrdinaryTimer::WriteWatchdogCounter(int& value)
     return fncReturn;
 }
 #endif
+
 bool CTpmOrdinaryTimer::ReadWatchdogCounter(UINT32 nvIndex, UINT64& value)
 {
     bool fncReturn = false;
@@ -871,6 +872,62 @@ bool CTpmOrdinaryTimer::WriteWatchdogCounter(UINT32 nvIndex, UINT64& value)
     return fncReturn;
 }
 
+bool CTpmOrdinaryTimer::IncrementWatchdogCounter(UINT32 nvIndex, UINT64& value)
+{
+    bool fncReturn = false;
+
+    try
+    {
+        if (!tpm) return false;
+
+        // önce oku
+        auto readVal = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 8, 0);
+        UINT64 counterValue = 0;
+
+        if (readVal.size() >= 8)
+        {
+            for (int i = 0; i < 8; ++i)
+            {
+                counterValue <<= 8;
+                counterValue |= readVal[i];
+            }
+        }
+
+        counterValue += 1;
+
+        // 8-byte big endian'e çevir
+        std::vector<BYTE> data(8, 0x00);
+        UINT64 tmp = counterValue;
+        for (int i = 7; i >= 0; --i)
+        {
+            data[i] = tmp & 0xFF;
+            tmp >>= 8;
+        }
+
+        // yaz
+        tpm->NV_Write(TPM_RH::OWNER, nvIndex, data, 0);
+
+        value = counterValue;
+        m_watchdogCounter = counterValue;
+
+        Log("Ordinary NV Counter incremented at index " + std::to_string(nvIndex) + " new value: " + std::to_string(value));
+        fncReturn = true;
+    }
+    catch (const std::exception& ex)
+    {
+        std::stringstream ss;
+        ss << "IncrementWatchdogCounter exception: " << ex.what();
+        Log(ss.str(), true);
+        fncReturn = false;
+    }
+    catch (...)
+    {
+        Log("IncrementWatchdogCounter unknown exception.", true);
+        fncReturn = false;
+    }
+
+    return fncReturn;
+}
 
 bool CTpmOrdinaryTimer::ReadWatchdogCounter(UINT64& value)
 {
@@ -880,4 +937,9 @@ bool CTpmOrdinaryTimer::ReadWatchdogCounter(UINT64& value)
 bool CTpmOrdinaryTimer::WriteWatchdogCounter(UINT64& value)
 {
     return WriteWatchdogCounter(TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX, value);
+}
+
+bool CTpmOrdinaryTimer::IncrementWatchdogCounter(UINT64& value)
+{
+    return IncrementWatchdogCounter(TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX, value);
 }

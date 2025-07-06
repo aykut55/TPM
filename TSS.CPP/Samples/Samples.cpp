@@ -3606,6 +3606,18 @@ void Samples::RunAllSamplesAT()
                 std::cout << "Ordinary counter reset successfully." << std::endl;
             }
 
+            UINT64 writeValue = 0;
+            UINT64 readValue = 0;
+
+            pTpmOrdinaryTimer->ReadWatchdogCounter(readValue);
+            writeValue = readValue + 1;
+            pTpmOrdinaryTimer->WriteWatchdogCounter(writeValue);
+
+            pTpmOrdinaryTimer->IncrementWatchdogCounter(readValue);
+            pTpmOrdinaryTimer->IncrementWatchdogCounter(readValue);
+            pTpmOrdinaryTimer->IncrementWatchdogCounter(readValue);
+            pTpmOrdinaryTimer->IncrementWatchdogCounter(readValue);
+
             iterationCount++;
 
         } while (iterationCount < maxIterationCount);
@@ -3706,6 +3718,21 @@ void Samples::RunAllSamplesAT()
             {
                 std::cout << "Ordinary counter reset successfully." << std::endl;
             }
+
+            UINT64 readValue = 0;
+            pTpmMonotonicTimer->ReadWatchdogCounter(readValue);
+
+            pTpmMonotonicTimer->IncrementWatchdogCounter(readValue);
+            pTpmMonotonicTimer->ReadWatchdogCounter(readValue);
+
+            pTpmMonotonicTimer->IncrementWatchdogCounter(readValue);
+            pTpmMonotonicTimer->ReadWatchdogCounter(readValue);
+
+            pTpmMonotonicTimer->IncrementWatchdogCounter(readValue);
+            pTpmMonotonicTimer->ReadWatchdogCounter(readValue);
+
+            pTpmMonotonicTimer->IncrementWatchdogCounter(readValue);
+            pTpmMonotonicTimer->ReadWatchdogCounter(readValue);
 
             iterationCount++;
 

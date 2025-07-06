@@ -25,6 +25,8 @@ public:
     bool              NVUndefineWatchdogCounter(bool fullFactoryReset = false);
     bool              InitWatchdogCounter(void);
     bool              ResetWatchdogCounter(void);
+    bool              ReadWatchdogCounter(UINT64& value);
+    bool              IncrementWatchdogCounter(UINT64& value);
 
 protected:
 

@@ -529,3 +529,98 @@ bool CTpmMonotonicTimer::ResetWatchdogCounter(void)
 
     return fncReturn;
 }
+
+bool CTpmMonotonicTimer::ReadWatchdogCounter(UINT64& value)
+{
+    bool fncReturn = false;
+
+    try
+    {
+        if (!tpm) return false;
+
+        UINT32 nvIndex = TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX;
+
+        auto readVal = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 8, 0);
+        UINT64 counterValue = 0;
+
+        if (readVal.size() >= 8)
+        {
+            for (int i = 0; i < 8; ++i)
+            {
+                counterValue <<= 8;
+                counterValue |= readVal[i];
+            }
+        }
+
+        value = counterValue;
+        m_watchdogCounter = counterValue;
+
+        Log("Monotonic NV Counter read: " + std::to_string(value));
+
+        fncReturn = true;
+    }
+    catch (const std::exception& ex)
+    {
+        std::stringstream ss;
+        ss << "ReadWatchdogCounter exception: " << ex.what();
+        Log(ss.str(), true);
+        fncReturn = false;
+    }
+    catch (...)
+    {
+        Log("ReadWatchdogCounter unknown exception.", true);
+        fncReturn = false;
+    }
+
+    return fncReturn;
+}
+
+bool CTpmMonotonicTimer::IncrementWatchdogCounter(UINT64& value)
+{
+    bool fncReturn = false;
+
+    try
+    {
+        if (!tpm) return false;
+
+        UINT32 nvIndex = TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX;
+
+        // increment
+        tpm->NV_Increment(TPM_RH::OWNER, TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX);
+
+        auto readVal = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 8, 0);
+        UINT64 counterValue = 0;
+
+        if (readVal.size() >= 8)
+        {
+            for (int i = 0; i < 8; ++i)
+            {
+                counterValue <<= 8;
+                counterValue |= readVal[i];
+            }
+        }
+
+        value = counterValue;
+        m_watchdogCounter = counterValue;
+
+        Log("Monotonic NV Counter read: " + std::to_string(value));
+
+        fncReturn = true;
+    }
+    catch (const std::exception& ex)
+    {
+        std::stringstream ss;
+        ss << "ReadWatchdogCounter exception: " << ex.what();
+        Log(ss.str(), true);
+        fncReturn = false;
+    }
+    catch (...)
+    {
+        Log("ReadWatchdogCounter unknown exception.", true);
+        fncReturn = false;
+    }
+
+    return fncReturn;
+}
+
+
