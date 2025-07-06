@@ -3387,6 +3387,8 @@ void clearStringstream(std::stringstream& ss)
 
 #include "TpmSharedDevice.h"
 #include "TpmClockReader.h"
+#include "TpmOrdinaryTimer.h"
+#include "TpmMonotonikTimer.h"
 void Samples::RunAllSamplesAT()
 {
     std::stringstream ss;
@@ -3505,6 +3507,130 @@ void Samples::RunAllSamplesAT()
             pTpmClockReader->Log(ss.str());
         }
     }
+
+    CTpmOrdinaryTimer* pTpmOrdinaryTimer = new CTpmOrdinaryTimer(pTpmSharedDevice);
+    int iterationCount = 0;
+    int maxIterationCount = 3;
+    int watchdogRunningTimeSec = 10;
+    {
+        pTpmOrdinaryTimer->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmOrdinaryTimer->Initialize())
+        {
+            clearStringstream(ss);
+            ss << "Failed to initialize TPM Ordinary Timer" << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        // Ordinary NV Counter tanimi sil
+        if (!pTpmOrdinaryTimer->OrdinaryUndefineWatchdogCounter())
+        {
+            clearStringstream(ss);
+            ss << "Ordinary NV Counter undefine failed." << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        // Ordinary NV Counter tanimla
+        if (!pTpmOrdinaryTimer->OrdinaryDefineWatchdogCounter())
+        {
+            clearStringstream(ss);
+            ss << "Ordinary NV Counter define failed." << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        // Ordinary NV Counter tanimi sil
+        if (!pTpmOrdinaryTimer->OrdinaryUndefineWatchdogCounter())
+        {
+            clearStringstream(ss);
+            ss << "Ordinary NV Counter undefine failed." << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        // Ordinary NV Counter tanimla
+        if (!pTpmOrdinaryTimer->OrdinaryDefineWatchdogCounter())
+        {
+            clearStringstream(ss);
+            ss << "Ordinary NV Counter define failed." << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        do
+        {
+            std::cout << std::endl;
+            std::cout << std::endl;
+            std::cout << std::endl;
+
+            // Ordinary counter NV alani olustur/oku
+            if (!pTpmOrdinaryTimer->InitWatchdogCounter())
+            {
+                clearStringstream(ss);
+                ss << "Failed to initialize Watchdog Counter." << std::endl;
+                pTpmOrdinaryTimer->Log(ss.str(), true);
+
+                return;
+            }
+
+            // watchdog baslat
+            pTpmOrdinaryTimer->StartWatchdog(5);  // 5 saniyede bir kontrol
+
+            std::cout << "Watchdog running for 30 seconds..." << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(watchdogRunningTimeSec));
+
+            // watchdog durdur
+            pTpmOrdinaryTimer->StopWatchdog();
+
+            std::cout << std::endl;
+            std::cout << std::endl;
+            std::cout << std::endl;
+
+            // counter'i resetle
+            if (pTpmOrdinaryTimer->ResetWatchdogCounter())
+            {
+                std::cout << "Ordinary counter reset successfully." << std::endl;
+            }
+
+            iterationCount++;
+
+        } while (iterationCount < maxIterationCount);
+
+    }
+
+    CTpmMonotonikTimer* pTpmMonotonikTimer = new CTpmMonotonikTimer(pTpmSharedDevice);
+    {
+        pTpmMonotonikTimer->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmMonotonikTimer->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM Monotonik Timer" << std::endl;
+            return;
+        }
+    }
+
+    delete pTpmMonotonikTimer;
+
+    delete pTpmOrdinaryTimer;
 
     delete pTpmClockReader;
 

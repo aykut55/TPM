@@ -187,6 +187,9 @@
     <ClInclude Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.h" />
+    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmMonotonikTimer\TpmMonotonikTimer.h" />
+    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.h" />
+    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmWatchdogTimer\TpmWatchdogTimer.h" />
     <ClInclude Include="Samples.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TpmConfig.h" />
@@ -208,6 +211,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmMonotonikTimer\TpmMonotonikTimer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmWatchdogTimer\TpmWatchdogTimer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="DocSamples.cpp" />

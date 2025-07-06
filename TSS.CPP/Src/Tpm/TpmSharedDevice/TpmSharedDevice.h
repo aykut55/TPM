@@ -19,6 +19,7 @@ public:
     void    StartHealthCheckLoop(int periodSeconds = 5);
     void    StopHealthCheckLoop(void);
     void    SetRecoverCallback(std::function<void(const std::string&, int attemptCount)> cb);
+    void    RecoverTpm(int attemptCount);
 
 protected:
 
@@ -26,7 +27,6 @@ private:
     std::function<void(const std::string&, int)> m_recoverCallback = nullptr;
 
     void CleanHandlesOfType(Tpm2* tpm, TPM_HT handleType, UINT32 rangeBegin = 0, UINT32 rangeEnd = 0x00FFFFFF);
-    void RecoverTpm(int attemptCount);
     void StartCallbacks(bool announceCallbacks = false);
     void FinishCallbacks(bool announceCallbacks = false);
 

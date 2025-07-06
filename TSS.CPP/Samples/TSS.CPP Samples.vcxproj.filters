@@ -22,6 +22,15 @@
     <ClCompile Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.cpp">
       <Filter>Src\Tpm\TpmSharedFiles</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmMonotonikTimer\TpmMonotonikTimer.cpp">
+      <Filter>Src\Tpm\TpmTimers\TpmMonotonikTimer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.cpp">
+      <Filter>Src\Tpm\TpmTimers\TpmOrdinaryTimer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmWatchdogTimer\TpmWatchdogTimer.cpp">
+      <Filter>Src\Tpm\TpmTimers\TpmWatchdogTimer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Samples.h" />
@@ -41,6 +50,15 @@
     </ClInclude>
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.h">
       <Filter>Src\Tpm\TpmSharedFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmMonotonikTimer\TpmMonotonikTimer.h">
+      <Filter>Src\Tpm\TpmTimers\TpmMonotonikTimer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.h">
+      <Filter>Src\Tpm\TpmTimers\TpmOrdinaryTimer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmWatchdogTimer\TpmWatchdogTimer.h">
+      <Filter>Src\Tpm\TpmTimers\TpmWatchdogTimer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
