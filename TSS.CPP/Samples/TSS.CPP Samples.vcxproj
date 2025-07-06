@@ -124,7 +124,7 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;..\Src\Tpm;..\Src\Tpm\TpmBaseClass;..\Src\Tpm\TpmClockReader;..\Src\Tpm\TpmCounters;..\Src\Tpm\TpmCounters\TpmMonotonikCounter;..\Src\Tpm\TpmCounters\TpmOrdinaryCounter;..\Src\Tpm\TpmCounters\TpmWatchdogCounter;..\Src\Tpm\TpmHelpers;..\Src\Tpm\TpmIO;..\Src\Tpm\TpmIO\TpmReader;..\Src\Tpm\TpmIO\TpmWriter;..\Src\Tpm\TpmSecurity;..\Src\Tpm\TpmSecurity\TpmCrypto;..\Src\Tpm\TpmSecurity\TpmHash;..\Src\Tpm\TpmSecurity\TpmRandom;..\Src\Tpm\TpmSecurity\TpmSignature;..\Src\Tpm\TpmSharedDevice;..\Src\Tpm\TpmSlot;..\Src\Tpm\TpmSlot\TpmSlotManager;..\Src\Tpm\TpmSlot\TpmSlotReader;..\Src\Tpm\TpmSlot\TpmSlotSecurity;..\Src\Tpm\TpmSlot\TpmSlotWriter;..\Src\Tpm\TpmTimers;..\Src\Tpm\TpmTimers\TpmMonotonikTimer;..\Src\Tpm\TpmTimers\TpmOrdinaryTimer;..\Src\Tpm\TpmTimers\TpmWatchdogTimer;..\Src\Tpm\TpmUtils;..\Src\Tpm\TpmSharedFiles</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include;..\Src\Tpm;..\Src\Tpm\TpmBaseClass;..\Src\Tpm\TpmClockReader;..\Src\Tpm\TpmCounters;..\Src\Tpm\TpmCounters\TpmMonotonicCounter;..\Src\Tpm\TpmCounters\TpmOrdinaryCounter;..\Src\Tpm\TpmCounters\TpmWatchdogCounter;..\Src\Tpm\TpmHelpers;..\Src\Tpm\TpmIO;..\Src\Tpm\TpmIO\TpmReader;..\Src\Tpm\TpmIO\TpmWriter;..\Src\Tpm\TpmSecurity;..\Src\Tpm\TpmSecurity\TpmCrypto;..\Src\Tpm\TpmSecurity\TpmHash;..\Src\Tpm\TpmSecurity\TpmRandom;..\Src\Tpm\TpmSecurity\TpmSignature;..\Src\Tpm\TpmSharedDevice;..\Src\Tpm\TpmSlot;..\Src\Tpm\TpmSlot\TpmSlotManager;..\Src\Tpm\TpmSlot\TpmSlotReader;..\Src\Tpm\TpmSlot\TpmSlotSecurity;..\Src\Tpm\TpmSlot\TpmSlotWriter;..\Src\Tpm\TpmTimers;..\Src\Tpm\TpmTimers\TpmMonotonicTimer;..\Src\Tpm\TpmTimers\TpmOrdinaryTimer;..\Src\Tpm\TpmTimers\TpmWatchdogTimer;..\Src\Tpm\TpmUtils;..\Src\Tpm\TpmSharedFiles</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4091</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -187,7 +187,7 @@
     <ClInclude Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.h" />
-    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmMonotonikTimer\TpmMonotonikTimer.h" />
+    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmMonotonicTimer\TpmMonotonicTimer.h" />
     <ClInclude Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.h" />
     <ClInclude Include="..\Src\Tpm\TpmTimers\TpmWatchdogTimer\TpmWatchdogTimer.h" />
     <ClInclude Include="Samples.h" />
@@ -213,7 +213,7 @@
     <ClCompile Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmMonotonikTimer\TpmMonotonikTimer.cpp">
+    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmMonotonicTimer\TpmMonotonicTimer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.cpp">

@@ -28,7 +28,7 @@ _TPMCPP_BEGIN
 // TODO: Better encapsulation and better constructors
 
 /// <summary> AUTH_SESSION represents authorization sessions. </summary>
-/// <remarks> This class in instantiated using either AUTH_SESSION::PWAP() static method 
+/// <remarks> This class in instantiated using either AUTH_SESSION::PWAP() static method
 /// or one of the Tpm2::StartAuthSession() command overloads. </remarks>
 class _DLLEXP_ AUTH_SESSION
 {
@@ -36,15 +36,15 @@ class _DLLEXP_ AUTH_SESSION
 
     AUTH_SESSION() = default;
 public:
-                     
-    AUTH_SESSION(const TPM_HANDLE& sessionHandle, TPM_SE type, TPM_ALG_ID hashAlg,           
-                    const ByteVec& nonceCaller, const ByteVec& nonceTpm,   
+
+    AUTH_SESSION(const TPM_HANDLE& sessionHandle, TPM_SE type, TPM_ALG_ID hashAlg,
+                    const ByteVec& nonceCaller, const ByteVec& nonceTpm,
                     TPMA_SESSION attributes,
                     const TPMT_SYM_DEF& symDef,       // OPT
                     const ByteVec& salt,              // OPT
                     const TPM_HANDLE& boundObject);   // OPT
 
-    /// <summary> Instantiates a placeholder object that tells the Tpm2 object to use 
+    /// <summary> Instantiates a placeholder object that tells the Tpm2 object to use
     /// the password session (with the auth value supplied by the corresponding
     /// handle parameter). </summary>
     static AUTH_SESSION PWAP()
@@ -131,7 +131,7 @@ class ActivationData {
 };
 
 /// <summary> This class encapsulates the data you need to Import a key. </summary>
-class DuplicationBlob {    
+class DuplicationBlob {
     public:
         /// <summary> The symmetrically encrypted duplicate object that may contain an inner
         /// symmetric wrapper </summary>

@@ -22,14 +22,14 @@
     <ClCompile Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.cpp">
       <Filter>Src\Tpm\TpmSharedFiles</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmMonotonikTimer\TpmMonotonikTimer.cpp">
-      <Filter>Src\Tpm\TpmTimers\TpmMonotonikTimer</Filter>
-    </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.cpp">
       <Filter>Src\Tpm\TpmTimers\TpmOrdinaryTimer</Filter>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmTimers\TpmWatchdogTimer\TpmWatchdogTimer.cpp">
       <Filter>Src\Tpm\TpmTimers\TpmWatchdogTimer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmTimers\TpmMonotonicTimer\TpmMonotonicTimer.cpp">
+      <Filter>Src\Tpm\TpmTimers\TpmMonotonicTimer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -51,14 +51,14 @@
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.h">
       <Filter>Src\Tpm\TpmSharedFiles</Filter>
     </ClInclude>
-    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmMonotonikTimer\TpmMonotonikTimer.h">
-      <Filter>Src\Tpm\TpmTimers\TpmMonotonikTimer</Filter>
-    </ClInclude>
     <ClInclude Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.h">
       <Filter>Src\Tpm\TpmTimers\TpmOrdinaryTimer</Filter>
     </ClInclude>
     <ClInclude Include="..\Src\Tpm\TpmTimers\TpmWatchdogTimer\TpmWatchdogTimer.h">
       <Filter>Src\Tpm\TpmTimers\TpmWatchdogTimer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmTimers\TpmMonotonicTimer\TpmMonotonicTimer.h">
+      <Filter>Src\Tpm\TpmTimers\TpmMonotonicTimer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -101,9 +101,6 @@
     <Filter Include="Src\Tpm\TpmUtils">
       <UniqueIdentifier>{fcea1446-62c4-46f3-a410-2ace680ac992}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Tpm\TpmCounters\TpmMonotonikCounter">
-      <UniqueIdentifier>{68411411-0c12-4e4f-9cea-6cd8f16e87da}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Src\Tpm\TpmCounters\TpmOrdinaryCounter">
       <UniqueIdentifier>{448fa575-dca7-4c01-b137-968f27ac72b4}</UniqueIdentifier>
     </Filter>
@@ -140,9 +137,6 @@
     <Filter Include="Src\Tpm\TpmSlot\TpmSlotWriter">
       <UniqueIdentifier>{ef9367a5-7ab1-4668-af07-380b5f1966d4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Tpm\TpmTimers\TpmMonotonikTimer">
-      <UniqueIdentifier>{c923bf0d-0f7a-44ad-8a2a-7e6e91891745}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Src\Tpm\TpmTimers\TpmOrdinaryTimer">
       <UniqueIdentifier>{b53a54fb-9aa3-40ab-8912-4d0d8083c54e}</UniqueIdentifier>
     </Filter>
@@ -154,6 +148,12 @@
     </Filter>
     <Filter Include="Src\TpmHelpers">
       <UniqueIdentifier>{59c160fa-66f5-45e5-a9c3-99b5f1ff9707}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmTimers\TpmMonotonicTimer">
+      <UniqueIdentifier>{c923bf0d-0f7a-44ad-8a2a-7e6e91891745}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmCounters\TpmMonotonicCounter">
+      <UniqueIdentifier>{68411411-0c12-4e4f-9cea-6cd8f16e87da}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

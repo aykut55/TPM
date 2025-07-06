@@ -66,14 +66,14 @@ public:
     /** Constructs input marshling buffer initialized with the given marshaled representation */
     TpmBuffer(const ByteVec& src) : buf(src) {}
 
-    TpmBuffer(const TpmBuffer& src) : buf(src.buf), pos(src.pos) {} 
+    TpmBuffer(const TpmBuffer& src) : buf(src.buf), pos(src.pos) {}
 
     /** @return  Reference to the underlying byte buffer */
     Buffer& buffer() { return buf; }
 
     /** @return  Size of the backing byte buffer.
      *           Note that during marshaling this size normally exceeds the amount of actually
-     *           stored data until trim() is invoked. 
+     *           stored data until trim() is invoked.
      */
     size_t size() const { return buf.size(); }
 
@@ -106,7 +106,7 @@ public:
             return;
         Int64ToTpm(val, len, this->buf, this->pos);
     }
-    
+
     uint64_t readNum(size_t len)
     {
         if (!checkLen(len))

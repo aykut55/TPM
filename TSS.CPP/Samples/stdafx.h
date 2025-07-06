@@ -10,7 +10,7 @@
 
 #if 0
 #ifdef WIN32
-#define WIN32_LEAN_AND_MEAN       
+#define WIN32_LEAN_AND_MEAN
 
 // REVISIT: Lots of these warnings.
 #pragma  warning(once:4251)

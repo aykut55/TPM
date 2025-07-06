@@ -11,7 +11,7 @@ typedef ByteVec ByteVec;
 class  TpmException;
 class TPMT_PUBLIC;
 
-/// <summary> Provides TSS with static methods implementing an interface to an underlying software 
+/// <summary> Provides TSS with static methods implementing an interface to an underlying software
 /// crypto library (currently OpenSSL). </summary>
 class _DLLEXP_ Crypto {
     public:
@@ -41,21 +41,21 @@ class _DLLEXP_ Crypto {
         // Public-key operations
 
         /// <summary> Validate the signature using the public key and scheme in pubKey </summary>
-        static bool ValidateSignature(const TPMT_PUBLIC& pubKey, 
+        static bool ValidateSignature(const TPMT_PUBLIC& pubKey,
                                       const ByteVec& signedDigest,
                                       const TPMU_SIGNATURE& signature);
 
         /// <summary> Encrypt using the public key and scheme in pubKey </summary>
-        static ByteVec Encrypt(const TPMT_PUBLIC& pubKey, 
+        static ByteVec Encrypt(const TPMT_PUBLIC& pubKey,
                                const ByteVec& secret,
                                const ByteVec& encodingParms);
 
         // Private asym key operations
 
-        /// <summary>Sign the dataToSign byte array using the given key. 
+        /// <summary>Sign the dataToSign byte array using the given key.
         /// If the key does not have a scheme of its own (i.e. was configuted with
         /// a NULL scheme), explicitScheme can be used to supply the signing scheme. </summary>
-        static SignResponse Sign(const class TSS_KEY& key, 
+        static SignResponse Sign(const class TSS_KEY& key,
                                        const ByteVec& dataToSign,
                                        const TPMU_SIG_SCHEME& explicitScheme);
 
@@ -80,9 +80,9 @@ class _DLLEXP_ Crypto {
         static ByteVec StringToEncodingParms(const string& s);
 
         /// <summary> TPM KDFa key-derivation function </summary>
-        static ByteVec KDFa(TPM_ALG_ID hmacHash, 
+        static ByteVec KDFa(TPM_ALG_ID hmacHash,
                             const ByteVec& hmacKey,
-                            const string& label, 
+                            const string& label,
                             const ByteVec& contextU,
                             const ByteVec& contextV,
                             uint32_t numBitsRequired);

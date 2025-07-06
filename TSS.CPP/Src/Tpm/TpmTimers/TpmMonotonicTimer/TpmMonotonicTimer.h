@@ -5,24 +5,24 @@
 
 using namespace TpmCpp;
 
-namespace TpmOrdinaryTimerNS
+namespace TpmMonotonicTimerNS
 {
-    constexpr UINT32 ORDINARY_COUNTER_NV_INDEX = 0x01500020;
+    constexpr UINT32 MONOTONIC_COUNTER_NV_INDEX = 0x01500010;
 }
 
-class CTpmOrdinaryTimer : public CTpmBaseClass
+class CTpmMonotonicTimer : public CTpmBaseClass
 {
 public:
-    virtual ~CTpmOrdinaryTimer();
-             CTpmOrdinaryTimer(CTpmSharedDevice* sharedDevice = nullptr);
+    virtual ~CTpmMonotonicTimer();
+             CTpmMonotonicTimer(CTpmSharedDevice* sharedDevice = nullptr);
 
     CTpmSharedDevice* GetTpmSharedDevice(void);
     bool              Release(void);
     bool              Initialize(void);
     bool              StartWatchdog(int intervalSeconds = 10);
     bool              StopWatchdog(void);
-    bool              OrdinaryDefineWatchdogCounter(void);
-    bool              OrdinaryUndefineWatchdogCounter(void);
+    bool              NVDefineWatchdogCounter(void);
+    bool              NVUndefineWatchdogCounter(bool fullFactoryReset = false);
     bool              InitWatchdogCounter(void);
     bool              ResetWatchdogCounter(void);
 

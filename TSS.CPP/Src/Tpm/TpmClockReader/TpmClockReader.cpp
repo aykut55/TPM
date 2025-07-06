@@ -110,6 +110,8 @@ bool CTpmClockReader::Initialize(void)
 
     try
     {
+        if (!tpm) return false;
+
         fncReturn = true;
     }
     catch (const std::exception& ex)

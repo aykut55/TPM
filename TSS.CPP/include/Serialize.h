@@ -64,7 +64,7 @@ public:
     /** Sets new current reading position in the serialization buffer. */
     virtual void setCurPos (size_t pos) = 0;
 
-    /** Sets qualifiers of the object/value serialized by the next write operation or expected 
+    /** Sets qualifiers of the object/value serialized by the next write operation or expected
      *  qualifiers of the object/value read by the next read operation. Erased by successful
      *  read/write operation.
      *  NOTE: Implementations are allowed to simply store the copies of argument pointers.
@@ -106,7 +106,7 @@ public:
 
     /** Deserializes an integer value */
     virtual uint64_t readNum() = 0;
-    
+
     //
     // Convenience (typed) helpers
     //
@@ -218,7 +218,7 @@ protected:
     void TabIn() { my_indent += TabSize; }
     void TabOut() { my_indent -= TabSize; }
     void Indent() { my_buf += string(my_indent, ' '); }
-    
+
     void Write(const string& str);
     void WriteLine(const string& str = "");
 
@@ -367,8 +367,8 @@ class _DLLEXP_ PlainTextSerializer : public TextSerializer
 
 protected:
     bool my_useComma = false;
-    
-    /** Output only beginning and trailing parts of byte buffers not fitting the 
+
+    /** Output only beginning and trailing parts of byte buffers not fitting the
      * `my_maxLineLen` setting requirements */
     bool my_precise = false;
 

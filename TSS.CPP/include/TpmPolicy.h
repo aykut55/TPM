@@ -11,20 +11,20 @@ _TPMCPP_BEGIN
 // TpmPolicy.h/cpp contains code supporting TPM policies. All TPM policy commands have an associated
 // class derived from PABase (policy-assertion base.) For example PolicyPcr is associated with
 // TPM2_PolicyPCR. The class TpmPolicy manages policy trees and has methods for calculating policy
-// hashes, executing policies and serialization. Policies are intrnally represented as 
+// hashes, executing policies and serialization. Policies are intrnally represented as
 // vector<PABase*>. Policies are executed from the end of the array towards the beginning. The
 // POlicyOR class has an array of "branches," each of which is vector<PABase*>.
-// 
+//
 // Any policy assertion class can have a string "tag." These are used for two purposes. First,
 // some PAs need to call back to the hosting program to evaluate a policy (e.g. sign a TPM nonce).
 // Second for a branchy-policy (one with PolicyOrs), the evaluator must be told which branch to
 // execute: it does this by naming the tag of the leaf (we call a leaf tag a BranchId).
-// 
+//
 // The library ensures that non-null-string tags are unique in a policy.
-// 
+//
 // If the policy does not have branches then the library will automatically add the branch-ID
 // "leaf" to the last element of the policy, if it is not already tagged.
-// 
+//
 // Certain policies' executions need to call back to the main OS to get dynamic parameters.
 // These callbacks are registered with the PolicyTree.
 //
@@ -41,7 +41,7 @@ public:
 typedef PolicyNVCallbackData (PolicyNvCallback)(const string& _tag);
 
 /// <summary> A PolicySigned callback should be of this type. </summary>
-typedef SignResponse (PolicySignedCallback)(const ByteVec& _nonceTpm, 
+typedef SignResponse (PolicySignedCallback)(const ByteVec& _nonceTpm,
                                             UINT32 _expiration,
                                             const ByteVec& _cpHashA,
                                             const ByteVec& _policyRef,
@@ -113,29 +113,29 @@ public:
     /// <summary> Create an empty policy tree.
     /// SetTree() can be used to add policy assertions. </summary>
     PolicyTree() {}
-        
+
     /// <summary> Create a policy tree with one policy assertion. </summary>
     PolicyTree(const PABase& p0);
-        
+
     /// <summary> Create a policy tree with two policy assertions. </summary>
     PolicyTree(const PABase& p0, const PABase& p1);
-        
+
     /// <summary> Create a policy tree with three assertions. </summary>
     PolicyTree(const PABase& p0, const PABase& p1, const PABase& p2);
-        
+
     /// <summary> Create a policy tree with four assertions. </summary>
     PolicyTree(const PABase& p0, const PABase& p1, const PABase& p2, const PABase& p3);
-        
+
     /// <summary> Create a policy tree with five assertions. </summary>
     PolicyTree(const PABase& p0, const PABase& p1, const PABase& p2, const PABase& p3, const PABase& p4);
-        
+
     /// <summary> Create a policy tree with one or more policy assertions.
     /// Note: a copy is made of the objects provided. </summary>
     PolicyTree(const vector<PABase*>& policyBranch)
     {
         SetTree(policyBranch);
     }
-        
+
     ~PolicyTree();
 
     /// <summary> Set the policy-tree.  Note: a copy is made of all objects (the caller
@@ -194,7 +194,7 @@ class _DLLEXP_ PolicyPhysicalPresence : public PABase
 public:
     PolicyPhysicalPresence(const string& tag = "") : PABase(tag) {}
     PolicyPhysicalPresence(const PolicyPhysicalPresence& r) : PABase(r) {}
-        
+
     virtual void UpdatePolicyDigest(TPM_HASH& accumulator) const;
     virtual void Execute(Tpm2& tpm, PolicyTree& p);
 
@@ -492,7 +492,7 @@ public:
 };
 
 /// <summary>This command includes a secret-based authorization to a policy.
-/// The caller proves knowledge of the secret value using either a password or 
+/// The caller proves knowledge of the secret value using either a password or
 /// an HMAC-based authorization session. </summary>
 class _DLLEXP_ PolicySecret : public PABase
 {
@@ -522,7 +522,7 @@ public:
     {}
 
     /// <summary> Normally the policy evaluator will "call back" into the calling program
-    /// to obtain the signature over the nonce (etc.)  However if the key is a software 
+    /// to obtain the signature over the nonce (etc.)  However if the key is a software
     /// TSS_KEY, then TSS.C++ can do the signature for you without a callback </summary>
     void SetAuthorizingObjectHandle(const TPM_HANDLE& handle)
     {

@@ -203,7 +203,7 @@ struct TpmEnum {
 
     template<typename V>
     static ValueType Value(V v) { return (ValueType)v; }
-    
+
     //ValueType operator&(TpmEnum v) const { return value & v.value; }
     //ValueType operator|(TpmEnum v) const { return value | v.value; }
 

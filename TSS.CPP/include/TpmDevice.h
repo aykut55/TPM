@@ -53,8 +53,8 @@ enum TcpTpmCommands {
     TestFailureMode = 30
 };
 
-/// <summary> Partially abstract base class for classes implementing communication 
-/// interface with TPM devices of different kinds (e.g. a simulator, 
+/// <summary> Partially abstract base class for classes implementing communication
+/// interface with TPM devices of different kinds (e.g. a simulator,
 ///TBS interface on Windows or /dev/tpm0 on linux). </summary>
 class _DLLEXP_ TpmDevice
 {
@@ -86,15 +86,15 @@ public:
 
 
     /// <summary> Powers on/off the TPM. </summary>
-    /// <remarks> Only implemented for TPM simulators and TPM vendors test harness. </remarks> 
+    /// <remarks> Only implemented for TPM simulators and TPM vendors test harness. </remarks>
     virtual void PowerCtl(bool on);
 
     /// <summary> Asserts or stop asserting Physical Presence. </summary>
-    /// <remarks> Only implemented for TPM simulators and TPM vendors test harness. </remarks> 
+    /// <remarks> Only implemented for TPM simulators and TPM vendors test harness. </remarks>
     virtual void AssertPhysicalPresence(bool on);
 
     /// <summary> Sets the locality for subsequent commands. </summary>
-    /// <remarks> Only implemented for TPM simulators and TPM vendors test harness. </remarks> 
+    /// <remarks> Only implemented for TPM simulators and TPM vendors test harness. </remarks>
     virtual void SetLocality(UINT32 locality);
 
     /// <summary>
@@ -143,7 +143,7 @@ public:
         PowerCtl(false);
         PowerCtl(true);
     }
-    
+
     /// <remarks> Convenience wrapper for AssertPhysicalPresence(true) </remarks>
     void PpOn()
     {
@@ -223,7 +223,7 @@ public:
     virtual bool Connect();
     virtual void Close();
 
-    /// <summary> Attempt to connect to the TPM simulator or proxy at the named address. 
+    /// <summary> Attempt to connect to the TPM simulator or proxy at the named address.
     /// Dotted or DNS names are accepted. </summary>
     bool Connect(string hostName, int port);
 

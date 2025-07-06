@@ -3388,7 +3388,7 @@ void clearStringstream(std::stringstream& ss)
 #include "TpmSharedDevice.h"
 #include "TpmClockReader.h"
 #include "TpmOrdinaryTimer.h"
-#include "TpmMonotonikTimer.h"
+#include "TpmMonotonicTimer.h"
 void Samples::RunAllSamplesAT()
 {
     std::stringstream ss;
@@ -3509,10 +3509,11 @@ void Samples::RunAllSamplesAT()
     }
 
     CTpmOrdinaryTimer* pTpmOrdinaryTimer = new CTpmOrdinaryTimer(pTpmSharedDevice);
-    int iterationCount = 0;
-    int maxIterationCount = 3;
-    int watchdogRunningTimeSec = 10;
     {
+        int iterationCount = 0;
+        int maxIterationCount = 3;
+        int watchdogRunningTimeSec = 10;
+
         pTpmOrdinaryTimer->SetLogCallback([](const std::string& msg, bool isError) {
             if (isError)
                 std::cerr << msg << std::endl;
@@ -3608,12 +3609,15 @@ void Samples::RunAllSamplesAT()
             iterationCount++;
 
         } while (iterationCount < maxIterationCount);
-
     }
 
-    CTpmMonotonikTimer* pTpmMonotonikTimer = new CTpmMonotonikTimer(pTpmSharedDevice);
+    CTpmMonotonicTimer* pTpmMonotonicTimer = new CTpmMonotonicTimer(pTpmSharedDevice);
     {
-        pTpmMonotonikTimer->SetLogCallback([](const std::string& msg, bool isError) {
+        int iterationCount = 0;
+        int maxIterationCount = 3;
+        int watchdogRunningTimeSec = 10;
+
+        pTpmMonotonicTimer->SetLogCallback([](const std::string& msg, bool isError) {
             if (isError)
                 std::cerr << msg << std::endl;
             else
@@ -3621,14 +3625,94 @@ void Samples::RunAllSamplesAT()
             }
         );
 
-        if (!pTpmMonotonikTimer->Initialize())
+        if (!pTpmMonotonicTimer->Initialize())
         {
-            std::cerr << "Failed to initialize TPM Monotonik Timer" << std::endl;
+            std::cerr << "Failed to initialize TPM Monotonic Timer" << std::endl;
             return;
         }
+
+
+        // Ordinary NV Counter tanimi sil
+        if (!pTpmMonotonicTimer->NVUndefineWatchdogCounter())
+        {
+            clearStringstream(ss);
+            ss << "Ordinary NV Counter undefine failed." << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        // Ordinary NV Counter tanimla
+        if (!pTpmMonotonicTimer->NVDefineWatchdogCounter())
+        {
+            clearStringstream(ss);
+            ss << "Ordinary NV Counter define failed." << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        // Ordinary NV Counter tanimi sil
+        if (!pTpmMonotonicTimer->NVUndefineWatchdogCounter())
+        {
+            clearStringstream(ss);
+            ss << "Ordinary NV Counter undefine failed." << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        // Ordinary NV Counter tanimla
+        if (!pTpmMonotonicTimer->NVDefineWatchdogCounter())
+        {
+            clearStringstream(ss);
+            ss << "Ordinary NV Counter define failed." << std::endl;
+            pTpmOrdinaryTimer->Log(ss.str(), true);
+
+            return;
+        }
+
+        do
+        {
+            std::cout << std::endl;
+            std::cout << std::endl;
+            std::cout << std::endl;
+
+            // Ordinary counter NV alani olustur/oku
+            if (!pTpmMonotonicTimer->InitWatchdogCounter())
+            {
+                clearStringstream(ss);
+                ss << "Failed to initialize Watchdog Counter." << std::endl;
+                pTpmOrdinaryTimer->Log(ss.str(), true);
+
+                return;
+            }
+
+            // watchdog baslat
+            pTpmMonotonicTimer->StartWatchdog(5);  // 5 saniyede bir kontrol
+
+            std::cout << "Watchdog running for 30 seconds..." << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(watchdogRunningTimeSec));
+
+            // watchdog durdur
+            pTpmMonotonicTimer->StopWatchdog();
+
+            std::cout << std::endl;
+            std::cout << std::endl;
+            std::cout << std::endl;
+
+            // counter'i resetle
+            if (pTpmMonotonicTimer->ResetWatchdogCounter())
+            {
+                std::cout << "Ordinary counter reset successfully." << std::endl;
+            }
+
+            iterationCount++;
+
+        } while (iterationCount < maxIterationCount);
     }
 
-    delete pTpmMonotonikTimer;
+    delete pTpmMonotonicTimer;
 
     delete pTpmOrdinaryTimer;
 

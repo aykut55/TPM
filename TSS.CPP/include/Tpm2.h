@@ -28,7 +28,7 @@ typedef void(*TpmResponseCallbackHandler)(const ByteVec& tpmCommand,
                                           const ByteVec& tpmResponse, void *context);
 
 /// <summary> Tpm2 provides methods to communicate with an underlying TPM2.0 device. Async-
-/// methods are provided via tpm.Async.*, and methods that change how Tpm2 behaves, or 
+/// methods are provided via tpm.Async.*, and methods that change how Tpm2 behaves, or
 /// fetches Tpm2 state are prefaced with an underscore, e.g. tpm._GetLastResponseCode(). </summary>
 class _DLLEXP_ Tpm2
 {
@@ -171,7 +171,7 @@ public:
     // cpHash computation
     //
 
-    /// <summary> The cpHash of the next command is placed in *hashToGet. Note that a valid hash 
+    /// <summary> The cpHash of the next command is placed in *hashToGet. Note that a valid hash
     /// algorithm must be set in hashToGet, and the next command will NOT be sent to the TPM. </summary>
     Tpm2& _GetCpHash(TPM_HASH *hashToGet)
     {
@@ -404,12 +404,12 @@ public:
     ///           nonceTPM - The initial nonce from the TPM, used in the computation of the sessionKey </returns>
     StartAuthSessionResponse StartAuthSession
     (
-        const TPM_HANDLE& tpmKey, 
-        const TPM_HANDLE& bind, 
-        const ByteVec& nonceCaller, 
-        const ByteVec& encryptedSalt, 
-        TPM_SE sessionType, 
-        const TPMT_SYM_DEF& symmetric, 
+        const TPM_HANDLE& tpmKey,
+        const TPM_HANDLE& bind,
+        const ByteVec& nonceCaller,
+        const ByteVec& encryptedSalt,
+        TPM_SE sessionType,
+        const TPMT_SYM_DEF& symmetric,
         TPM_ALG_ID authHash
     );
 
@@ -446,10 +446,10 @@ public:
     ///                            creation data was produced by the TPM </returns>
     CreateResponse Create
     (
-        const TPM_HANDLE& parentHandle, 
-        const TPMS_SENSITIVE_CREATE& inSensitive, 
-        const TPMT_PUBLIC& inPublic, 
-        const ByteVec& outsideInfo, 
+        const TPM_HANDLE& parentHandle,
+        const TPMS_SENSITIVE_CREATE& inSensitive,
+        const TPMT_PUBLIC& inPublic,
+        const ByteVec& outsideInfo,
         const vector<TPMS_PCR_SELECTION>& creationPCR
     );
 
@@ -465,8 +465,8 @@ public:
     ///           name - Name of the loaded object </returns>
     TPM_HANDLE Load
     (
-        const TPM_HANDLE& parentHandle, 
-        const TPM2B_PRIVATE& inPrivate, 
+        const TPM_HANDLE& parentHandle,
+        const TPM2B_PRIVATE& inPrivate,
         const TPMT_PUBLIC& inPublic
     );
 
@@ -479,8 +479,8 @@ public:
     ///           name - Name of the loaded object </returns>
     TPM_HANDLE LoadExternal
     (
-        const TPMT_SENSITIVE& inPrivate, 
-        const TPMT_PUBLIC& inPublic, 
+        const TPMT_SENSITIVE& inPrivate,
+        const TPMT_PUBLIC& inPublic,
         const TPM_HANDLE& hierarchy
     );
 
@@ -508,9 +508,9 @@ public:
     ///                      nameAlg associated with keyHandle </returns>
     ByteVec ActivateCredential
     (
-        const TPM_HANDLE& activateHandle, 
-        const TPM_HANDLE& keyHandle, 
-        const TPMS_ID_OBJECT& credentialBlob, 
+        const TPM_HANDLE& activateHandle,
+        const TPM_HANDLE& keyHandle,
+        const TPMS_ID_OBJECT& credentialBlob,
         const ByteVec& secret
     );
 
@@ -525,8 +525,8 @@ public:
     ///           secret - Handle algorithm-dependent data that wraps the key that encrypts credentialBlob </returns>
     MakeCredentialResponse MakeCredential
     (
-        const TPM_HANDLE& handle, 
-        const ByteVec& credential, 
+        const TPM_HANDLE& handle,
+        const ByteVec& credential,
         const ByteVec& objectName
     );
 
@@ -549,8 +549,8 @@ public:
     /// <returns> outPrivate - Private area containing the new authorization value </returns>
     TPM2B_PRIVATE ObjectChangeAuth
     (
-        const TPM_HANDLE& objectHandle, 
-        const TPM_HANDLE& parentHandle, 
+        const TPM_HANDLE& objectHandle,
+        const TPM_HANDLE& parentHandle,
         const ByteVec& newAuth
     );
 
@@ -571,8 +571,8 @@ public:
     ///           name - The name of the created object </returns>
     CreateLoadedResponse CreateLoaded
     (
-        const TPM_HANDLE& parentHandle, 
-        const TPMS_SENSITIVE_CREATE& inSensitive, 
+        const TPM_HANDLE& parentHandle,
+        const TPMS_SENSITIVE_CREATE& inSensitive,
         const ByteVec& inPublic
     );
 
@@ -599,9 +599,9 @@ public:
     ///           outSymSeed - Seed protected by the asymmetric algorithms of new parent (NP) </returns>
     DuplicateResponse Duplicate
     (
-        const TPM_HANDLE& objectHandle, 
-        const TPM_HANDLE& newParentHandle, 
-        const ByteVec& encryptionKeyIn, 
+        const TPM_HANDLE& objectHandle,
+        const TPM_HANDLE& newParentHandle,
+        const ByteVec& encryptionKeyIn,
         const TPMT_SYM_DEF_OBJECT& symmetricAlg
     );
 
@@ -626,10 +626,10 @@ public:
     ///           outSymSeed - Seed for a symmetric key protected by newParent asymmetric key </returns>
     RewrapResponse Rewrap
     (
-        const TPM_HANDLE& oldParent, 
-        const TPM_HANDLE& newParent, 
-        const TPM2B_PRIVATE& inDuplicate, 
-        const ByteVec& name, 
+        const TPM_HANDLE& oldParent,
+        const TPM_HANDLE& newParent,
+        const TPM2B_PRIVATE& inDuplicate,
+        const ByteVec& name,
         const ByteVec& inSymSeed
     );
 
@@ -658,11 +658,11 @@ public:
     /// <returns> outPrivate - The sensitive area encrypted with the symmetric key of parentHandle </returns>
     TPM2B_PRIVATE Import
     (
-        const TPM_HANDLE& parentHandle, 
-        const ByteVec& encryptionKey, 
-        const TPMT_PUBLIC& objectPublic, 
-        const TPM2B_PRIVATE& duplicate, 
-        const ByteVec& inSymSeed, 
+        const TPM_HANDLE& parentHandle,
+        const ByteVec& encryptionKey,
+        const TPMT_PUBLIC& objectPublic,
+        const TPM2B_PRIVATE& duplicate,
+        const ByteVec& inSymSeed,
         const TPMT_SYM_DEF_OBJECT& symmetricAlg
     );
 
@@ -689,9 +689,9 @@ public:
     /// <returns> outData - Encrypted output </returns>
     ByteVec RSA_Encrypt
     (
-        const TPM_HANDLE& keyHandle, 
-        const ByteVec& message, 
-        const TPMU_ASYM_SCHEME& inScheme, 
+        const TPM_HANDLE& keyHandle,
+        const ByteVec& message,
+        const TPMU_ASYM_SCHEME& inScheme,
         const ByteVec& label
     );
 
@@ -712,9 +712,9 @@ public:
     /// <returns> message - Decrypted output </returns>
     ByteVec RSA_Decrypt
     (
-        const TPM_HANDLE& keyHandle, 
-        const ByteVec& cipherText, 
-        const TPMU_ASYM_SCHEME& inScheme, 
+        const TPM_HANDLE& keyHandle,
+        const ByteVec& cipherText,
+        const TPMU_ASYM_SCHEME& inScheme,
         const ByteVec& label
     );
 
@@ -739,7 +739,7 @@ public:
     ///                      yZ) [hdS]QB </returns>
     TPMS_ECC_POINT ECDH_ZGen
     (
-        const TPM_HANDLE& keyHandle, 
+        const TPM_HANDLE& keyHandle,
         const TPMS_ECC_POINT& inPoint
     );
 
@@ -765,10 +765,10 @@ public:
     ///           outZ2 - X and Y coordinates of the second computed value (scheme dependent) </returns>
     ZGen_2PhaseResponse ZGen_2Phase
     (
-        const TPM_HANDLE& keyA, 
-        const TPMS_ECC_POINT& inQsB, 
-        const TPMS_ECC_POINT& inQeB, 
-        TPM_ALG_ID inScheme, 
+        const TPM_HANDLE& keyA,
+        const TPMS_ECC_POINT& inQsB,
+        const TPMS_ECC_POINT& inQeB,
+        TPM_ALG_ID inScheme,
         UINT16 counter
     );
 
@@ -784,8 +784,8 @@ public:
     ///           C3 - The integrity value </returns>
     ECC_EncryptResponse ECC_Encrypt
     (
-        const TPM_HANDLE& keyHandle, 
-        const ByteVec& plainText, 
+        const TPM_HANDLE& keyHandle,
+        const ByteVec& plainText,
         const TPMU_KDF_SCHEME& inScheme
     );
 
@@ -802,10 +802,10 @@ public:
     /// <returns> plainText - Decrypted output </returns>
     ByteVec ECC_Decrypt
     (
-        const TPM_HANDLE& keyHandle, 
-        const TPMS_ECC_POINT& C1, 
-        const ByteVec& C2, 
-        const ByteVec& C3, 
+        const TPM_HANDLE& keyHandle,
+        const TPMS_ECC_POINT& C1,
+        const ByteVec& C2,
+        const ByteVec& C3,
         const TPMU_KDF_SCHEME& inScheme
     );
 
@@ -824,10 +824,10 @@ public:
     ///           ivOut - Chaining value to use for IV in next round </returns>
     EncryptDecryptResponse EncryptDecrypt
     (
-        const TPM_HANDLE& keyHandle, 
-        BYTE decrypt, 
-        TPM_ALG_ID mode, 
-        const ByteVec& ivIn, 
+        const TPM_HANDLE& keyHandle,
+        BYTE decrypt,
+        TPM_ALG_ID mode,
+        const ByteVec& ivIn,
         const ByteVec& inData
     );
 
@@ -846,10 +846,10 @@ public:
     ///           ivOut - Chaining value to use for IV in next round </returns>
     EncryptDecrypt2Response EncryptDecrypt2
     (
-        const TPM_HANDLE& keyHandle, 
-        const ByteVec& inData, 
-        BYTE decrypt, 
-        TPM_ALG_ID mode, 
+        const TPM_HANDLE& keyHandle,
+        const ByteVec& inData,
+        BYTE decrypt,
+        TPM_ALG_ID mode,
         const ByteVec& ivIn
     );
 
@@ -865,8 +865,8 @@ public:
     ///                        restricted key </returns>
     HashResponse Hash
     (
-        const ByteVec& data, 
-        TPM_ALG_ID hashAlg, 
+        const ByteVec& data,
+        TPM_ALG_ID hashAlg,
         const TPM_HANDLE& hierarchy
     );
 
@@ -880,8 +880,8 @@ public:
     /// <returns> outHMAC - The returned HMAC in a sized buffer </returns>
     ByteVec HMAC
     (
-        const TPM_HANDLE& handle, 
-        const ByteVec& buffer, 
+        const TPM_HANDLE& handle,
+        const ByteVec& buffer,
         TPM_ALG_ID hashAlg
     );
 
@@ -895,8 +895,8 @@ public:
     /// <returns> outMAC - The returned MAC in a sized buffer </returns>
     ByteVec MAC
     (
-        const TPM_HANDLE& handle, 
-        const ByteVec& buffer, 
+        const TPM_HANDLE& handle,
+        const ByteVec& buffer,
         TPM_ALG_ID inScheme
     );
 
@@ -921,8 +921,8 @@ public:
     /// <returns> handle - A handle to reference the sequence </returns>
     TPM_HANDLE HMAC_Start
     (
-        const TPM_HANDLE& handle, 
-        const ByteVec& auth, 
+        const TPM_HANDLE& handle,
+        const ByteVec& auth,
         TPM_ALG_ID hashAlg
     );
 
@@ -937,8 +937,8 @@ public:
     /// <returns> handle - A handle to reference the sequence </returns>
     TPM_HANDLE MAC_Start
     (
-        const TPM_HANDLE& handle, 
-        const ByteVec& auth, 
+        const TPM_HANDLE& handle,
+        const ByteVec& auth,
         TPM_ALG_ID inScheme
     );
 
@@ -952,7 +952,7 @@ public:
     /// <returns> handle - A handle to reference the sequence </returns>
     TPM_HANDLE HashSequenceStart
     (
-        const ByteVec& auth, 
+        const ByteVec& auth,
         TPM_ALG_ID hashAlg
     );
 
@@ -964,7 +964,7 @@ public:
     /// <param name = "buffer"> Data to be added to hash </param>
     void SequenceUpdate
     (
-        const TPM_HANDLE& sequenceHandle, 
+        const TPM_HANDLE& sequenceHandle,
         const ByteVec& buffer
     );
 
@@ -981,8 +981,8 @@ public:
     ///                        This is a NULL Ticket when the sequence is HMAC. </returns>
     SequenceCompleteResponse SequenceComplete
     (
-        const TPM_HANDLE& sequenceHandle, 
-        const ByteVec& buffer, 
+        const TPM_HANDLE& sequenceHandle,
+        const ByteVec& buffer,
         const TPM_HANDLE& hierarchy
     );
 
@@ -1001,8 +1001,8 @@ public:
     /// <returns> results - List of digests computed for the PCR </returns>
     vector<TPMT_HA> EventSequenceComplete
     (
-        const TPM_HANDLE& pcrHandle, 
-        const TPM_HANDLE& sequenceHandle, 
+        const TPM_HANDLE& pcrHandle,
+        const TPM_HANDLE& sequenceHandle,
         const ByteVec& buffer
     );
 
@@ -1027,9 +1027,9 @@ public:
     ///                       by signHandle </returns>
     CertifyResponse Certify
     (
-        const TPM_HANDLE& objectHandle, 
-        const TPM_HANDLE& signHandle, 
-        const ByteVec& qualifyingData, 
+        const TPM_HANDLE& objectHandle,
+        const TPM_HANDLE& signHandle,
+        const ByteVec& qualifyingData,
         const TPMU_SIG_SCHEME& inScheme
     );
 
@@ -1054,11 +1054,11 @@ public:
     ///           signature - The signature over certifyInfo </returns>
     CertifyCreationResponse CertifyCreation
     (
-        const TPM_HANDLE& signHandle, 
-        const TPM_HANDLE& objectHandle, 
-        const ByteVec& qualifyingData, 
-        const ByteVec& creationHash, 
-        const TPMU_SIG_SCHEME& inScheme, 
+        const TPM_HANDLE& signHandle,
+        const TPM_HANDLE& objectHandle,
+        const ByteVec& qualifyingData,
+        const ByteVec& creationHash,
+        const TPMU_SIG_SCHEME& inScheme,
         const TPMT_TK_CREATION& creationTicket
     );
 
@@ -1076,9 +1076,9 @@ public:
     ///           signature - The signature over quoted </returns>
     QuoteResponse Quote
     (
-        const TPM_HANDLE& signHandle, 
-        const ByteVec& qualifyingData, 
-        const TPMU_SIG_SCHEME& inScheme, 
+        const TPM_HANDLE& signHandle,
+        const ByteVec& qualifyingData,
+        const TPMU_SIG_SCHEME& inScheme,
         const vector<TPMS_PCR_SELECTION>& PCRselect
     );
 
@@ -1100,10 +1100,10 @@ public:
     ///           signature - The signature over auditInfo </returns>
     GetSessionAuditDigestResponse GetSessionAuditDigest
     (
-        const TPM_HANDLE& privacyAdminHandle, 
-        const TPM_HANDLE& signHandle, 
-        const TPM_HANDLE& sessionHandle, 
-        const ByteVec& qualifyingData, 
+        const TPM_HANDLE& privacyAdminHandle,
+        const TPM_HANDLE& signHandle,
+        const TPM_HANDLE& sessionHandle,
+        const ByteVec& qualifyingData,
         const TPMU_SIG_SCHEME& inScheme
     );
 
@@ -1125,9 +1125,9 @@ public:
     ///           signature - The signature over auditInfo </returns>
     GetCommandAuditDigestResponse GetCommandAuditDigest
     (
-        const TPM_HANDLE& privacyHandle, 
-        const TPM_HANDLE& signHandle, 
-        const ByteVec& qualifyingData, 
+        const TPM_HANDLE& privacyHandle,
+        const TPM_HANDLE& signHandle,
+        const ByteVec& qualifyingData,
         const TPMU_SIG_SCHEME& inScheme
     );
 
@@ -1148,9 +1148,9 @@ public:
     ///           signature - The signature over timeInfo </returns>
     GetTimeResponse GetTime
     (
-        const TPM_HANDLE& privacyAdminHandle, 
-        const TPM_HANDLE& signHandle, 
-        const ByteVec& qualifyingData, 
+        const TPM_HANDLE& privacyAdminHandle,
+        const TPM_HANDLE& signHandle,
+        const ByteVec& qualifyingData,
         const TPMU_SIG_SCHEME& inScheme
     );
 
@@ -1179,10 +1179,10 @@ public:
     ///           signature - The signature over tbsDigest </returns>
     CertifyX509Response CertifyX509
     (
-        const TPM_HANDLE& objectHandle, 
-        const TPM_HANDLE& signHandle, 
-        const ByteVec& reserved, 
-        const TPMU_SIG_SCHEME& inScheme, 
+        const TPM_HANDLE& objectHandle,
+        const TPM_HANDLE& signHandle,
+        const ByteVec& reserved,
+        const TPMU_SIG_SCHEME& inScheme,
         const ByteVec& partialCertificate
     );
 
@@ -1202,9 +1202,9 @@ public:
     ///           counter - Least-significant 16 bits of commitCount </returns>
     CommitResponse Commit
     (
-        const TPM_HANDLE& signHandle, 
-        const TPMS_ECC_POINT& P1, 
-        const ByteVec& s2, 
+        const TPM_HANDLE& signHandle,
+        const TPMS_ECC_POINT& P1,
+        const ByteVec& s2,
         const ByteVec& y2
     );
 
@@ -1230,8 +1230,8 @@ public:
     ///                        Name of keyName. The ticket is computed by </returns>
     TPMT_TK_VERIFIED VerifySignature
     (
-        const TPM_HANDLE& keyHandle, 
-        const ByteVec& digest, 
+        const TPM_HANDLE& keyHandle,
+        const ByteVec& digest,
         const TPMU_SIGNATURE& signature
     );
 
@@ -1251,9 +1251,9 @@ public:
     /// <returns> signature - The signature </returns>
     shared_ptr<TPMU_SIGNATURE> Sign
     (
-        const TPM_HANDLE& keyHandle, 
-        const ByteVec& digest, 
-        const TPMU_SIG_SCHEME& inScheme, 
+        const TPM_HANDLE& keyHandle,
+        const ByteVec& digest,
+        const TPMU_SIG_SCHEME& inScheme,
         const TPMT_TK_HASHCHECK& validation
     );
 
@@ -1270,9 +1270,9 @@ public:
     /// <param name = "clearList"> List of commands that will no longer be audited </param>
     void SetCommandCodeAuditStatus
     (
-        const TPM_HANDLE& auth, 
-        TPM_ALG_ID auditAlg, 
-        const vector<TPM_CC>& setList, 
+        const TPM_HANDLE& auth,
+        TPM_ALG_ID auditAlg,
+        const vector<TPM_CC>& setList,
         const vector<TPM_CC>& clearList
     );
 
@@ -1286,7 +1286,7 @@ public:
     /// <param name = "digests"> List of tagged digest values to be extended </param>
     void PCR_Extend
     (
-        const TPM_HANDLE& pcrHandle, 
+        const TPM_HANDLE& pcrHandle,
         const vector<TPMT_HA>& digests
     );
 
@@ -1301,7 +1301,7 @@ public:
     ///                     implication, the size of the digest. </returns>
     vector<TPMT_HA> PCR_Event
     (
-        const TPM_HANDLE& pcrHandle, 
+        const TPM_HANDLE& pcrHandle,
         const ByteVec& eventData
     );
 
@@ -1325,7 +1325,7 @@ public:
     ///           sizeAvailable - Number of octets available. Computed before the allocation. </returns>
     PCR_AllocateResponse PCR_Allocate
     (
-        const TPM_HANDLE& authHandle, 
+        const TPM_HANDLE& authHandle,
         const vector<TPMS_PCR_SELECTION>& pcrAllocation
     );
 
@@ -1339,9 +1339,9 @@ public:
     /// <param name = "pcrNum"> The PCR for which the policy is to be set </param>
     void PCR_SetAuthPolicy
     (
-        const TPM_HANDLE& authHandle, 
-        const ByteVec& authPolicy, 
-        TPM_ALG_ID hashAlg, 
+        const TPM_HANDLE& authHandle,
+        const ByteVec& authPolicy,
+        TPM_ALG_ID hashAlg,
         const TPM_HANDLE& pcrNum
     );
 
@@ -1352,7 +1352,7 @@ public:
     /// <param name = "auth"> The desired authorization value </param>
     void PCR_SetAuthValue
     (
-        const TPM_HANDLE& pcrHandle, 
+        const TPM_HANDLE& pcrHandle,
         const ByteVec& auth
     );
 
@@ -1394,12 +1394,12 @@ public:
     ///                          structure tag. See 23.2.5 </returns>
     PolicySignedResponse PolicySigned
     (
-        const TPM_HANDLE& authObject, 
-        const TPM_HANDLE& policySession, 
-        const ByteVec& nonceTPM, 
-        const ByteVec& cpHashA, 
-        const ByteVec& policyRef, 
-        INT32 expiration, 
+        const TPM_HANDLE& authObject,
+        const TPM_HANDLE& policySession,
+        const ByteVec& nonceTPM,
+        const ByteVec& cpHashA,
+        const ByteVec& policyRef,
+        INT32 expiration,
         const TPMU_SIGNATURE& auth
     );
 
@@ -1431,11 +1431,11 @@ public:
     ///                          TPMT_ST_AUTH_SECRET structure tag </returns>
     PolicySecretResponse PolicySecret
     (
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& policySession, 
-        const ByteVec& nonceTPM, 
-        const ByteVec& cpHashA, 
-        const ByteVec& policyRef, 
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& policySession,
+        const ByteVec& nonceTPM,
+        const ByteVec& cpHashA,
+        const ByteVec& policyRef,
         INT32 expiration
     );
 
@@ -1456,11 +1456,11 @@ public:
     ///        TPM2_PolicySigned() or TPM2_PolicySecret() </param>
     void PolicyTicket
     (
-        const TPM_HANDLE& policySession, 
-        const ByteVec& timeout, 
-        const ByteVec& cpHashA, 
-        const ByteVec& policyRef, 
-        const ByteVec& authName, 
+        const TPM_HANDLE& policySession,
+        const ByteVec& timeout,
+        const ByteVec& cpHashA,
+        const ByteVec& policyRef,
+        const ByteVec& authName,
         const TPMT_TK_AUTH& ticket
     );
 
@@ -1473,7 +1473,7 @@ public:
     /// <param name = "pHashList"> The list of hashes to check for a match </param>
     void PolicyOR
     (
-        const TPM_HANDLE& policySession, 
+        const TPM_HANDLE& policySession,
         const vector<TPM2B_DIGEST>& pHashList
     );
 
@@ -1488,8 +1488,8 @@ public:
     /// <param name = "pcrs"> The PCR to include in the check digest </param>
     void PolicyPCR
     (
-        const TPM_HANDLE& policySession, 
-        const ByteVec& pcrDigest, 
+        const TPM_HANDLE& policySession,
+        const ByteVec& pcrDigest,
         const vector<TPMS_PCR_SELECTION>& pcrs
     );
 
@@ -1500,7 +1500,7 @@ public:
     /// <param name = "locality"> The allowed localities for the policy </param>
     void PolicyLocality
     (
-        const TPM_HANDLE& policySession, 
+        const TPM_HANDLE& policySession,
         TPMA_LOCALITY locality
     );
 
@@ -1519,11 +1519,11 @@ public:
     /// <param name = "operation"> The comparison to make </param>
     void PolicyNV
     (
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& nvIndex, 
-        const TPM_HANDLE& policySession, 
-        const ByteVec& operandB, 
-        UINT16 offset, 
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& nvIndex,
+        const TPM_HANDLE& policySession,
+        const ByteVec& operandB,
+        UINT16 offset,
         TPM_EO operation
     );
 
@@ -1537,9 +1537,9 @@ public:
     /// <param name = "operation"> The comparison to make </param>
     void PolicyCounterTimer
     (
-        const TPM_HANDLE& policySession, 
-        const ByteVec& operandB, 
-        UINT16 offset, 
+        const TPM_HANDLE& policySession,
+        const ByteVec& operandB,
+        UINT16 offset,
         TPM_EO operation
     );
 
@@ -1550,7 +1550,7 @@ public:
     /// <param name = "code"> The allowed commandCode </param>
     void PolicyCommandCode
     (
-        const TPM_HANDLE& policySession, 
+        const TPM_HANDLE& policySession,
         TPM_CC code
     );
 
@@ -1567,7 +1567,7 @@ public:
     /// <param name = "cpHashA"> The cpHash added to the policy </param>
     void PolicyCpHash
     (
-        const TPM_HANDLE& policySession, 
+        const TPM_HANDLE& policySession,
         const ByteVec& cpHashA
     );
 
@@ -1580,7 +1580,7 @@ public:
     /// <param name = "nameHash"> The digest to be added to the policy </param>
     void PolicyNameHash
     (
-        const TPM_HANDLE& policySession, 
+        const TPM_HANDLE& policySession,
         const ByteVec& nameHash
     );
 
@@ -1594,9 +1594,9 @@ public:
     ///        policySessionpolicyDigest </param>
     void PolicyDuplicationSelect
     (
-        const TPM_HANDLE& policySession, 
-        const ByteVec& objectName, 
-        const ByteVec& newParentName, 
+        const TPM_HANDLE& policySession,
+        const ByteVec& objectName,
+        const ByteVec& newParentName,
         BYTE includeObject
     );
 
@@ -1612,10 +1612,10 @@ public:
     ///        signed by keySign </param>
     void PolicyAuthorize
     (
-        const TPM_HANDLE& policySession, 
-        const ByteVec& approvedPolicy, 
-        const ByteVec& policyRef, 
-        const ByteVec& keySign, 
+        const TPM_HANDLE& policySession,
+        const ByteVec& approvedPolicy,
+        const ByteVec& policyRef,
+        const ByteVec& keySign,
         const TPMT_TK_VERIFIED& checkTicket
     );
 
@@ -1648,7 +1648,7 @@ public:
     ///        NO if NV Index is required not to have been written </param>
     void PolicyNvWritten
     (
-        const TPM_HANDLE& policySession, 
+        const TPM_HANDLE& policySession,
         BYTE writtenSet
     );
 
@@ -1660,7 +1660,7 @@ public:
     /// <param name = "templateHash"> The digest to be added to the policy </param>
     void PolicyTemplate
     (
-        const TPM_HANDLE& policySession, 
+        const TPM_HANDLE& policySession,
         const ByteVec& templateHash
     );
 
@@ -1677,8 +1677,8 @@ public:
     ///        Auth Index: None </param>
     void PolicyAuthorizeNV
     (
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& nvIndex, 
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& nvIndex,
         const TPM_HANDLE& policySession
     );
 
@@ -1705,10 +1705,10 @@ public:
     ///           name - The name of the created object </returns>
     CreatePrimaryResponse CreatePrimary
     (
-        const TPM_HANDLE& primaryHandle, 
-        const TPMS_SENSITIVE_CREATE& inSensitive, 
-        const TPMT_PUBLIC& inPublic, 
-        const ByteVec& outsideInfo, 
+        const TPM_HANDLE& primaryHandle,
+        const TPMS_SENSITIVE_CREATE& inSensitive,
+        const TPMT_PUBLIC& inPublic,
+        const ByteVec& outsideInfo,
         const vector<TPMS_PCR_SELECTION>& creationPCR
     );
 
@@ -1723,8 +1723,8 @@ public:
     /// <param name = "state"> YES if the enable should be SET, NO if the enable should be CLEAR </param>
     void HierarchyControl
     (
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& enable, 
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& enable,
         BYTE state
     );
 
@@ -1743,8 +1743,8 @@ public:
     ///        If the authPolicy is an Empty Buffer, then this field shall be TPM_ALG_NULL. </param>
     void SetPrimaryPolicy
     (
-        const TPM_HANDLE& authHandle, 
-        const ByteVec& authPolicy, 
+        const TPM_HANDLE& authHandle,
+        const ByteVec& authPolicy,
         TPM_ALG_ID hashAlg
     );
 
@@ -1779,7 +1779,7 @@ public:
     ///        to be CLEAR. </param>
     void ClearControl
     (
-        const TPM_HANDLE& auth, 
+        const TPM_HANDLE& auth,
         BYTE disable
     );
 
@@ -1791,7 +1791,7 @@ public:
     /// <param name = "newAuth"> New authorization value </param>
     void HierarchyChangeAuth
     (
-        const TPM_HANDLE& authHandle, 
+        const TPM_HANDLE& authHandle,
         const ByteVec& newAuth
     );
 
@@ -1817,9 +1817,9 @@ public:
     ///        A value of zero indicates that a reboot is required. </param>
     void DictionaryAttackParameters
     (
-        const TPM_HANDLE& lockHandle, 
-        UINT32 newMaxTries, 
-        UINT32 newRecoveryTime, 
+        const TPM_HANDLE& lockHandle,
+        UINT32 newMaxTries,
+        UINT32 newRecoveryTime,
         UINT32 lockoutRecovery
     );
 
@@ -1834,8 +1834,8 @@ public:
     ///        Presence be asserted </param>
     void PP_Commands
     (
-        const TPM_HANDLE& auth, 
-        const vector<TPM_CC>& setList, 
+        const TPM_HANDLE& auth,
+        const vector<TPM_CC>& setList,
         const vector<TPM_CC>& clearList
     );
 
@@ -1848,7 +1848,7 @@ public:
     ///        selection </param>
     void SetAlgorithmSet
     (
-        const TPM_HANDLE& authHandle, 
+        const TPM_HANDLE& authHandle,
         UINT32 algorithmSet
     );
 
@@ -1868,9 +1868,9 @@ public:
     ///        TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE. </param>
     void FieldUpgradeStart
     (
-        const TPM_HANDLE& authorization, 
-        const TPM_HANDLE& keyHandle, 
-        const ByteVec& fuDigest, 
+        const TPM_HANDLE& authorization,
+        const TPM_HANDLE& keyHandle,
+        const ByteVec& fuDigest,
         const TPMU_SIGNATURE& manifestSignature
     );
 
@@ -1926,8 +1926,8 @@ public:
     ///        persistentHandle </param>
     void EvictControl
     (
-        const TPM_HANDLE& auth, 
-        const TPM_HANDLE& objectHandle, 
+        const TPM_HANDLE& auth,
+        const TPM_HANDLE& objectHandle,
         const TPM_HANDLE& persistentHandle
     );
 
@@ -1947,7 +1947,7 @@ public:
     /// <param name = "newTime"> New Clock setting in milliseconds </param>
     void ClockSet
     (
-        const TPM_HANDLE& auth, 
+        const TPM_HANDLE& auth,
         UINT64 newTime
     );
 
@@ -1959,7 +1959,7 @@ public:
     /// <param name = "rateAdjust"> Adjustment to current Clock update rate </param>
     void ClockRateAdjust
     (
-        const TPM_HANDLE& auth, 
+        const TPM_HANDLE& auth,
         TPM_CLOCK_ADJUST rateAdjust
     );
 
@@ -1972,8 +1972,8 @@ public:
     ///           capabilityData - The capability data </returns>
     GetCapabilityResponse GetCapability
     (
-        TPM_CAP capability, 
-        UINT32 property, 
+        TPM_CAP capability,
+        UINT32 property,
         UINT32 propertyCount
     );
 
@@ -1994,8 +1994,8 @@ public:
     /// <param name = "publicInfo"> The public parameters of the NV area </param>
     void NV_DefineSpace
     (
-        const TPM_HANDLE& authHandle, 
-        const ByteVec& auth, 
+        const TPM_HANDLE& authHandle,
+        const ByteVec& auth,
         const TPMS_NV_PUBLIC& publicInfo
     );
 
@@ -2007,7 +2007,7 @@ public:
     ///        Auth Index: None </param>
     void NV_UndefineSpace
     (
-        const TPM_HANDLE& authHandle, 
+        const TPM_HANDLE& authHandle,
         const TPM_HANDLE& nvIndex
     );
 
@@ -2021,7 +2021,7 @@ public:
     ///        Auth Role: USER </param>
     void NV_UndefineSpaceSpecial
     (
-        const TPM_HANDLE& nvIndex, 
+        const TPM_HANDLE& nvIndex,
         const TPM_HANDLE& platform
     );
 
@@ -2045,9 +2045,9 @@ public:
     /// <param name = "offset"> The octet offset into the NV Area </param>
     void NV_Write
     (
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& nvIndex, 
-        const ByteVec& data, 
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& nvIndex,
+        const ByteVec& data,
         UINT16 offset
     );
 
@@ -2060,7 +2060,7 @@ public:
     ///        Auth Index: None </param>
     void NV_Increment
     (
-        const TPM_HANDLE& authHandle, 
+        const TPM_HANDLE& authHandle,
         const TPM_HANDLE& nvIndex
     );
 
@@ -2074,8 +2074,8 @@ public:
     /// <param name = "data"> The data to extend </param>
     void NV_Extend
     (
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& nvIndex, 
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& nvIndex,
         const ByteVec& data
     );
 
@@ -2090,8 +2090,8 @@ public:
     /// <param name = "bits"> The data to OR with the current contents </param>
     void NV_SetBits
     (
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& nvIndex, 
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& nvIndex,
         UINT64 bits
     );
 
@@ -2104,7 +2104,7 @@ public:
     ///        Auth Index: None </param>
     void NV_WriteLock
     (
-        const TPM_HANDLE& authHandle, 
+        const TPM_HANDLE& authHandle,
         const TPM_HANDLE& nvIndex
     );
 
@@ -2128,9 +2128,9 @@ public:
     /// <returns> data - The data read </returns>
     ByteVec NV_Read
     (
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& nvIndex, 
-        UINT16 size, 
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& nvIndex,
+        UINT16 size,
         UINT16 offset
     );
 
@@ -2143,7 +2143,7 @@ public:
     ///        Auth Index: None </param>
     void NV_ReadLock
     (
-        const TPM_HANDLE& authHandle, 
+        const TPM_HANDLE& authHandle,
         const TPM_HANDLE& nvIndex
     );
 
@@ -2154,7 +2154,7 @@ public:
     /// <param name = "newAuth"> New authorization value </param>
     void NV_ChangeAuth
     (
-        const TPM_HANDLE& nvIndex, 
+        const TPM_HANDLE& nvIndex,
         const ByteVec& newAuth
     );
 
@@ -2182,12 +2182,12 @@ public:
     ///                       by signHandle </returns>
     NV_CertifyResponse NV_Certify
     (
-        const TPM_HANDLE& signHandle, 
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& nvIndex, 
-        const ByteVec& qualifyingData, 
-        const TPMU_SIG_SCHEME& inScheme, 
-        UINT16 size, 
+        const TPM_HANDLE& signHandle,
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& nvIndex,
+        const ByteVec& qualifyingData,
+        const TPMU_SIG_SCHEME& inScheme,
+        UINT16 size,
         UINT16 offset
     );
 
@@ -2201,8 +2201,8 @@ public:
     ///           capabilitiesData - List of capabilities </returns>
     AC_GetCapabilityResponse AC_GetCapability
     (
-        const TPM_HANDLE& ac, 
-        TPM_AT capability, 
+        const TPM_HANDLE& ac,
+        TPM_AT capability,
         UINT32 count
     );
 
@@ -2220,9 +2220,9 @@ public:
     /// <returns> acDataOut - May include AC specific data or information about an error. </returns>
     TPMS_AC_OUTPUT AC_Send
     (
-        const TPM_HANDLE& sendObject, 
-        const TPM_HANDLE& authHandle, 
-        const TPM_HANDLE& ac, 
+        const TPM_HANDLE& sendObject,
+        const TPM_HANDLE& authHandle,
+        const TPM_HANDLE& ac,
         const ByteVec& acDataIn
     );
 
@@ -2241,10 +2241,10 @@ public:
     ///        policySessionpolicyDigest </param>
     void Policy_AC_SendSelect
     (
-        const TPM_HANDLE& policySession, 
-        const ByteVec& objectName, 
-        const ByteVec& authHandleName, 
-        const ByteVec& acName, 
+        const TPM_HANDLE& policySession,
+        const ByteVec& objectName,
+        const ByteVec& authHandleName,
+        const ByteVec& acName,
         BYTE includeObject
     );
 
@@ -2256,7 +2256,7 @@ public:
     /// <param name = "startTimeout"> The start timeout value for the ACT in seconds </param>
     void ACT_SetTimeout
     (
-        const TPM_HANDLE& actHandle, 
+        const TPM_HANDLE& actHandle,
         UINT32 startTimeout
     );
 
@@ -2325,12 +2325,12 @@ public:
         ///           nonceTPM - The initial nonce from the TPM, used in the computation of the sessionKey </returns>
         void StartAuthSession
         (
-            const TPM_HANDLE& tpmKey, 
-            const TPM_HANDLE& bind, 
-            const ByteVec& nonceCaller, 
-            const ByteVec& encryptedSalt, 
-            TPM_SE sessionType, 
-            const TPMT_SYM_DEF& symmetric, 
+            const TPM_HANDLE& tpmKey,
+            const TPM_HANDLE& bind,
+            const ByteVec& nonceCaller,
+            const ByteVec& encryptedSalt,
+            TPM_SE sessionType,
+            const TPMT_SYM_DEF& symmetric,
             TPM_ALG_ID authHash
         );
 
@@ -2367,10 +2367,10 @@ public:
         ///                            creation data was produced by the TPM </returns>
         void Create
         (
-            const TPM_HANDLE& parentHandle, 
-            const TPMS_SENSITIVE_CREATE& inSensitive, 
-            const TPMT_PUBLIC& inPublic, 
-            const ByteVec& outsideInfo, 
+            const TPM_HANDLE& parentHandle,
+            const TPMS_SENSITIVE_CREATE& inSensitive,
+            const TPMT_PUBLIC& inPublic,
+            const ByteVec& outsideInfo,
             const vector<TPMS_PCR_SELECTION>& creationPCR
         );
 
@@ -2386,8 +2386,8 @@ public:
         ///           name - Name of the loaded object </returns>
         void Load
         (
-            const TPM_HANDLE& parentHandle, 
-            const TPM2B_PRIVATE& inPrivate, 
+            const TPM_HANDLE& parentHandle,
+            const TPM2B_PRIVATE& inPrivate,
             const TPMT_PUBLIC& inPublic
         );
 
@@ -2400,8 +2400,8 @@ public:
         ///           name - Name of the loaded object </returns>
         void LoadExternal
         (
-            const TPMT_SENSITIVE& inPrivate, 
-            const TPMT_PUBLIC& inPublic, 
+            const TPMT_SENSITIVE& inPrivate,
+            const TPMT_PUBLIC& inPublic,
             const TPM_HANDLE& hierarchy
         );
 
@@ -2429,9 +2429,9 @@ public:
         ///                      nameAlg associated with keyHandle </returns>
         void ActivateCredential
         (
-            const TPM_HANDLE& activateHandle, 
-            const TPM_HANDLE& keyHandle, 
-            const TPMS_ID_OBJECT& credentialBlob, 
+            const TPM_HANDLE& activateHandle,
+            const TPM_HANDLE& keyHandle,
+            const TPMS_ID_OBJECT& credentialBlob,
             const ByteVec& secret
         );
 
@@ -2446,8 +2446,8 @@ public:
         ///           secret - Handle algorithm-dependent data that wraps the key that encrypts credentialBlob </returns>
         void MakeCredential
         (
-            const TPM_HANDLE& handle, 
-            const ByteVec& credential, 
+            const TPM_HANDLE& handle,
+            const ByteVec& credential,
             const ByteVec& objectName
         );
 
@@ -2470,8 +2470,8 @@ public:
         /// <returns> outPrivate - Private area containing the new authorization value </returns>
         void ObjectChangeAuth
         (
-            const TPM_HANDLE& objectHandle, 
-            const TPM_HANDLE& parentHandle, 
+            const TPM_HANDLE& objectHandle,
+            const TPM_HANDLE& parentHandle,
             const ByteVec& newAuth
         );
 
@@ -2492,8 +2492,8 @@ public:
         ///           name - The name of the created object </returns>
         void CreateLoaded
         (
-            const TPM_HANDLE& parentHandle, 
-            const TPMS_SENSITIVE_CREATE& inSensitive, 
+            const TPM_HANDLE& parentHandle,
+            const TPMS_SENSITIVE_CREATE& inSensitive,
             const ByteVec& inPublic
         );
 
@@ -2520,9 +2520,9 @@ public:
         ///           outSymSeed - Seed protected by the asymmetric algorithms of new parent (NP) </returns>
         void Duplicate
         (
-            const TPM_HANDLE& objectHandle, 
-            const TPM_HANDLE& newParentHandle, 
-            const ByteVec& encryptionKeyIn, 
+            const TPM_HANDLE& objectHandle,
+            const TPM_HANDLE& newParentHandle,
+            const ByteVec& encryptionKeyIn,
             const TPMT_SYM_DEF_OBJECT& symmetricAlg
         );
 
@@ -2547,10 +2547,10 @@ public:
         ///           outSymSeed - Seed for a symmetric key protected by newParent asymmetric key </returns>
         void Rewrap
         (
-            const TPM_HANDLE& oldParent, 
-            const TPM_HANDLE& newParent, 
-            const TPM2B_PRIVATE& inDuplicate, 
-            const ByteVec& name, 
+            const TPM_HANDLE& oldParent,
+            const TPM_HANDLE& newParent,
+            const TPM2B_PRIVATE& inDuplicate,
+            const ByteVec& name,
             const ByteVec& inSymSeed
         );
 
@@ -2579,11 +2579,11 @@ public:
         /// <returns> outPrivate - The sensitive area encrypted with the symmetric key of parentHandle </returns>
         void Import
         (
-            const TPM_HANDLE& parentHandle, 
-            const ByteVec& encryptionKey, 
-            const TPMT_PUBLIC& objectPublic, 
-            const TPM2B_PRIVATE& duplicate, 
-            const ByteVec& inSymSeed, 
+            const TPM_HANDLE& parentHandle,
+            const ByteVec& encryptionKey,
+            const TPMT_PUBLIC& objectPublic,
+            const TPM2B_PRIVATE& duplicate,
+            const ByteVec& inSymSeed,
             const TPMT_SYM_DEF_OBJECT& symmetricAlg
         );
 
@@ -2610,9 +2610,9 @@ public:
         /// <returns> outData - Encrypted output </returns>
         void RSA_Encrypt
         (
-            const TPM_HANDLE& keyHandle, 
-            const ByteVec& message, 
-            const TPMU_ASYM_SCHEME& inScheme, 
+            const TPM_HANDLE& keyHandle,
+            const ByteVec& message,
+            const TPMU_ASYM_SCHEME& inScheme,
             const ByteVec& label
         );
 
@@ -2633,9 +2633,9 @@ public:
         /// <returns> message - Decrypted output </returns>
         void RSA_Decrypt
         (
-            const TPM_HANDLE& keyHandle, 
-            const ByteVec& cipherText, 
-            const TPMU_ASYM_SCHEME& inScheme, 
+            const TPM_HANDLE& keyHandle,
+            const ByteVec& cipherText,
+            const TPMU_ASYM_SCHEME& inScheme,
             const ByteVec& label
         );
 
@@ -2660,7 +2660,7 @@ public:
         ///                      yZ) [hdS]QB </returns>
         void ECDH_ZGen
         (
-            const TPM_HANDLE& keyHandle, 
+            const TPM_HANDLE& keyHandle,
             const TPMS_ECC_POINT& inPoint
         );
 
@@ -2686,10 +2686,10 @@ public:
         ///           outZ2 - X and Y coordinates of the second computed value (scheme dependent) </returns>
         void ZGen_2Phase
         (
-            const TPM_HANDLE& keyA, 
-            const TPMS_ECC_POINT& inQsB, 
-            const TPMS_ECC_POINT& inQeB, 
-            TPM_ALG_ID inScheme, 
+            const TPM_HANDLE& keyA,
+            const TPMS_ECC_POINT& inQsB,
+            const TPMS_ECC_POINT& inQeB,
+            TPM_ALG_ID inScheme,
             UINT16 counter
         );
 
@@ -2705,8 +2705,8 @@ public:
         ///           C3 - The integrity value </returns>
         void ECC_Encrypt
         (
-            const TPM_HANDLE& keyHandle, 
-            const ByteVec& plainText, 
+            const TPM_HANDLE& keyHandle,
+            const ByteVec& plainText,
             const TPMU_KDF_SCHEME& inScheme
         );
 
@@ -2723,10 +2723,10 @@ public:
         /// <returns> plainText - Decrypted output </returns>
         void ECC_Decrypt
         (
-            const TPM_HANDLE& keyHandle, 
-            const TPMS_ECC_POINT& C1, 
-            const ByteVec& C2, 
-            const ByteVec& C3, 
+            const TPM_HANDLE& keyHandle,
+            const TPMS_ECC_POINT& C1,
+            const ByteVec& C2,
+            const ByteVec& C3,
             const TPMU_KDF_SCHEME& inScheme
         );
 
@@ -2745,10 +2745,10 @@ public:
         ///           ivOut - Chaining value to use for IV in next round </returns>
         void EncryptDecrypt
         (
-            const TPM_HANDLE& keyHandle, 
-            BYTE decrypt, 
-            TPM_ALG_ID mode, 
-            const ByteVec& ivIn, 
+            const TPM_HANDLE& keyHandle,
+            BYTE decrypt,
+            TPM_ALG_ID mode,
+            const ByteVec& ivIn,
             const ByteVec& inData
         );
 
@@ -2767,10 +2767,10 @@ public:
         ///           ivOut - Chaining value to use for IV in next round </returns>
         void EncryptDecrypt2
         (
-            const TPM_HANDLE& keyHandle, 
-            const ByteVec& inData, 
-            BYTE decrypt, 
-            TPM_ALG_ID mode, 
+            const TPM_HANDLE& keyHandle,
+            const ByteVec& inData,
+            BYTE decrypt,
+            TPM_ALG_ID mode,
             const ByteVec& ivIn
         );
 
@@ -2786,8 +2786,8 @@ public:
         ///                        restricted key </returns>
         void Hash
         (
-            const ByteVec& data, 
-            TPM_ALG_ID hashAlg, 
+            const ByteVec& data,
+            TPM_ALG_ID hashAlg,
             const TPM_HANDLE& hierarchy
         );
 
@@ -2801,8 +2801,8 @@ public:
         /// <returns> outHMAC - The returned HMAC in a sized buffer </returns>
         void HMAC
         (
-            const TPM_HANDLE& handle, 
-            const ByteVec& buffer, 
+            const TPM_HANDLE& handle,
+            const ByteVec& buffer,
             TPM_ALG_ID hashAlg
         );
 
@@ -2816,8 +2816,8 @@ public:
         /// <returns> outMAC - The returned MAC in a sized buffer </returns>
         void MAC
         (
-            const TPM_HANDLE& handle, 
-            const ByteVec& buffer, 
+            const TPM_HANDLE& handle,
+            const ByteVec& buffer,
             TPM_ALG_ID inScheme
         );
 
@@ -2842,8 +2842,8 @@ public:
         /// <returns> handle - A handle to reference the sequence </returns>
         void HMAC_Start
         (
-            const TPM_HANDLE& handle, 
-            const ByteVec& auth, 
+            const TPM_HANDLE& handle,
+            const ByteVec& auth,
             TPM_ALG_ID hashAlg
         );
 
@@ -2858,8 +2858,8 @@ public:
         /// <returns> handle - A handle to reference the sequence </returns>
         void MAC_Start
         (
-            const TPM_HANDLE& handle, 
-            const ByteVec& auth, 
+            const TPM_HANDLE& handle,
+            const ByteVec& auth,
             TPM_ALG_ID inScheme
         );
 
@@ -2873,7 +2873,7 @@ public:
         /// <returns> handle - A handle to reference the sequence </returns>
         void HashSequenceStart
         (
-            const ByteVec& auth, 
+            const ByteVec& auth,
             TPM_ALG_ID hashAlg
         );
 
@@ -2885,7 +2885,7 @@ public:
         /// <param name = "buffer"> Data to be added to hash </param>
         void SequenceUpdate
         (
-            const TPM_HANDLE& sequenceHandle, 
+            const TPM_HANDLE& sequenceHandle,
             const ByteVec& buffer
         );
 
@@ -2902,8 +2902,8 @@ public:
         ///                        This is a NULL Ticket when the sequence is HMAC. </returns>
         void SequenceComplete
         (
-            const TPM_HANDLE& sequenceHandle, 
-            const ByteVec& buffer, 
+            const TPM_HANDLE& sequenceHandle,
+            const ByteVec& buffer,
             const TPM_HANDLE& hierarchy
         );
 
@@ -2922,8 +2922,8 @@ public:
         /// <returns> results - List of digests computed for the PCR </returns>
         void EventSequenceComplete
         (
-            const TPM_HANDLE& pcrHandle, 
-            const TPM_HANDLE& sequenceHandle, 
+            const TPM_HANDLE& pcrHandle,
+            const TPM_HANDLE& sequenceHandle,
             const ByteVec& buffer
         );
 
@@ -2948,9 +2948,9 @@ public:
         ///                       by signHandle </returns>
         void Certify
         (
-            const TPM_HANDLE& objectHandle, 
-            const TPM_HANDLE& signHandle, 
-            const ByteVec& qualifyingData, 
+            const TPM_HANDLE& objectHandle,
+            const TPM_HANDLE& signHandle,
+            const ByteVec& qualifyingData,
             const TPMU_SIG_SCHEME& inScheme
         );
 
@@ -2975,11 +2975,11 @@ public:
         ///           signature - The signature over certifyInfo </returns>
         void CertifyCreation
         (
-            const TPM_HANDLE& signHandle, 
-            const TPM_HANDLE& objectHandle, 
-            const ByteVec& qualifyingData, 
-            const ByteVec& creationHash, 
-            const TPMU_SIG_SCHEME& inScheme, 
+            const TPM_HANDLE& signHandle,
+            const TPM_HANDLE& objectHandle,
+            const ByteVec& qualifyingData,
+            const ByteVec& creationHash,
+            const TPMU_SIG_SCHEME& inScheme,
             const TPMT_TK_CREATION& creationTicket
         );
 
@@ -2997,9 +2997,9 @@ public:
         ///           signature - The signature over quoted </returns>
         void Quote
         (
-            const TPM_HANDLE& signHandle, 
-            const ByteVec& qualifyingData, 
-            const TPMU_SIG_SCHEME& inScheme, 
+            const TPM_HANDLE& signHandle,
+            const ByteVec& qualifyingData,
+            const TPMU_SIG_SCHEME& inScheme,
             const vector<TPMS_PCR_SELECTION>& PCRselect
         );
 
@@ -3021,10 +3021,10 @@ public:
         ///           signature - The signature over auditInfo </returns>
         void GetSessionAuditDigest
         (
-            const TPM_HANDLE& privacyAdminHandle, 
-            const TPM_HANDLE& signHandle, 
-            const TPM_HANDLE& sessionHandle, 
-            const ByteVec& qualifyingData, 
+            const TPM_HANDLE& privacyAdminHandle,
+            const TPM_HANDLE& signHandle,
+            const TPM_HANDLE& sessionHandle,
+            const ByteVec& qualifyingData,
             const TPMU_SIG_SCHEME& inScheme
         );
 
@@ -3046,9 +3046,9 @@ public:
         ///           signature - The signature over auditInfo </returns>
         void GetCommandAuditDigest
         (
-            const TPM_HANDLE& privacyHandle, 
-            const TPM_HANDLE& signHandle, 
-            const ByteVec& qualifyingData, 
+            const TPM_HANDLE& privacyHandle,
+            const TPM_HANDLE& signHandle,
+            const ByteVec& qualifyingData,
             const TPMU_SIG_SCHEME& inScheme
         );
 
@@ -3069,9 +3069,9 @@ public:
         ///           signature - The signature over timeInfo </returns>
         void GetTime
         (
-            const TPM_HANDLE& privacyAdminHandle, 
-            const TPM_HANDLE& signHandle, 
-            const ByteVec& qualifyingData, 
+            const TPM_HANDLE& privacyAdminHandle,
+            const TPM_HANDLE& signHandle,
+            const ByteVec& qualifyingData,
             const TPMU_SIG_SCHEME& inScheme
         );
 
@@ -3100,10 +3100,10 @@ public:
         ///           signature - The signature over tbsDigest </returns>
         void CertifyX509
         (
-            const TPM_HANDLE& objectHandle, 
-            const TPM_HANDLE& signHandle, 
-            const ByteVec& reserved, 
-            const TPMU_SIG_SCHEME& inScheme, 
+            const TPM_HANDLE& objectHandle,
+            const TPM_HANDLE& signHandle,
+            const ByteVec& reserved,
+            const TPMU_SIG_SCHEME& inScheme,
             const ByteVec& partialCertificate
         );
 
@@ -3123,9 +3123,9 @@ public:
         ///           counter - Least-significant 16 bits of commitCount </returns>
         void Commit
         (
-            const TPM_HANDLE& signHandle, 
-            const TPMS_ECC_POINT& P1, 
-            const ByteVec& s2, 
+            const TPM_HANDLE& signHandle,
+            const TPMS_ECC_POINT& P1,
+            const ByteVec& s2,
             const ByteVec& y2
         );
 
@@ -3151,8 +3151,8 @@ public:
         ///                        Name of keyName. The ticket is computed by </returns>
         void VerifySignature
         (
-            const TPM_HANDLE& keyHandle, 
-            const ByteVec& digest, 
+            const TPM_HANDLE& keyHandle,
+            const ByteVec& digest,
             const TPMU_SIGNATURE& signature
         );
 
@@ -3172,9 +3172,9 @@ public:
         /// <returns> signature - The signature </returns>
         void Sign
         (
-            const TPM_HANDLE& keyHandle, 
-            const ByteVec& digest, 
-            const TPMU_SIG_SCHEME& inScheme, 
+            const TPM_HANDLE& keyHandle,
+            const ByteVec& digest,
+            const TPMU_SIG_SCHEME& inScheme,
             const TPMT_TK_HASHCHECK& validation
         );
 
@@ -3191,9 +3191,9 @@ public:
         /// <param name = "clearList"> List of commands that will no longer be audited </param>
         void SetCommandCodeAuditStatus
         (
-            const TPM_HANDLE& auth, 
-            TPM_ALG_ID auditAlg, 
-            const vector<TPM_CC>& setList, 
+            const TPM_HANDLE& auth,
+            TPM_ALG_ID auditAlg,
+            const vector<TPM_CC>& setList,
             const vector<TPM_CC>& clearList
         );
 
@@ -3207,7 +3207,7 @@ public:
         /// <param name = "digests"> List of tagged digest values to be extended </param>
         void PCR_Extend
         (
-            const TPM_HANDLE& pcrHandle, 
+            const TPM_HANDLE& pcrHandle,
             const vector<TPMT_HA>& digests
         );
 
@@ -3222,7 +3222,7 @@ public:
         ///                     implication, the size of the digest. </returns>
         void PCR_Event
         (
-            const TPM_HANDLE& pcrHandle, 
+            const TPM_HANDLE& pcrHandle,
             const ByteVec& eventData
         );
 
@@ -3246,7 +3246,7 @@ public:
         ///           sizeAvailable - Number of octets available. Computed before the allocation. </returns>
         void PCR_Allocate
         (
-            const TPM_HANDLE& authHandle, 
+            const TPM_HANDLE& authHandle,
             const vector<TPMS_PCR_SELECTION>& pcrAllocation
         );
 
@@ -3260,9 +3260,9 @@ public:
         /// <param name = "pcrNum"> The PCR for which the policy is to be set </param>
         void PCR_SetAuthPolicy
         (
-            const TPM_HANDLE& authHandle, 
-            const ByteVec& authPolicy, 
-            TPM_ALG_ID hashAlg, 
+            const TPM_HANDLE& authHandle,
+            const ByteVec& authPolicy,
+            TPM_ALG_ID hashAlg,
             const TPM_HANDLE& pcrNum
         );
 
@@ -3273,7 +3273,7 @@ public:
         /// <param name = "auth"> The desired authorization value </param>
         void PCR_SetAuthValue
         (
-            const TPM_HANDLE& pcrHandle, 
+            const TPM_HANDLE& pcrHandle,
             const ByteVec& auth
         );
 
@@ -3315,12 +3315,12 @@ public:
         ///                          structure tag. See 23.2.5 </returns>
         void PolicySigned
         (
-            const TPM_HANDLE& authObject, 
-            const TPM_HANDLE& policySession, 
-            const ByteVec& nonceTPM, 
-            const ByteVec& cpHashA, 
-            const ByteVec& policyRef, 
-            INT32 expiration, 
+            const TPM_HANDLE& authObject,
+            const TPM_HANDLE& policySession,
+            const ByteVec& nonceTPM,
+            const ByteVec& cpHashA,
+            const ByteVec& policyRef,
+            INT32 expiration,
             const TPMU_SIGNATURE& auth
         );
 
@@ -3352,11 +3352,11 @@ public:
         ///                          TPMT_ST_AUTH_SECRET structure tag </returns>
         void PolicySecret
         (
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& policySession, 
-            const ByteVec& nonceTPM, 
-            const ByteVec& cpHashA, 
-            const ByteVec& policyRef, 
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& policySession,
+            const ByteVec& nonceTPM,
+            const ByteVec& cpHashA,
+            const ByteVec& policyRef,
             INT32 expiration
         );
 
@@ -3377,11 +3377,11 @@ public:
         ///        TPM2_PolicySigned() or TPM2_PolicySecret() </param>
         void PolicyTicket
         (
-            const TPM_HANDLE& policySession, 
-            const ByteVec& timeout, 
-            const ByteVec& cpHashA, 
-            const ByteVec& policyRef, 
-            const ByteVec& authName, 
+            const TPM_HANDLE& policySession,
+            const ByteVec& timeout,
+            const ByteVec& cpHashA,
+            const ByteVec& policyRef,
+            const ByteVec& authName,
             const TPMT_TK_AUTH& ticket
         );
 
@@ -3394,7 +3394,7 @@ public:
         /// <param name = "pHashList"> The list of hashes to check for a match </param>
         void PolicyOR
         (
-            const TPM_HANDLE& policySession, 
+            const TPM_HANDLE& policySession,
             const vector<TPM2B_DIGEST>& pHashList
         );
 
@@ -3409,8 +3409,8 @@ public:
         /// <param name = "pcrs"> The PCR to include in the check digest </param>
         void PolicyPCR
         (
-            const TPM_HANDLE& policySession, 
-            const ByteVec& pcrDigest, 
+            const TPM_HANDLE& policySession,
+            const ByteVec& pcrDigest,
             const vector<TPMS_PCR_SELECTION>& pcrs
         );
 
@@ -3421,7 +3421,7 @@ public:
         /// <param name = "locality"> The allowed localities for the policy </param>
         void PolicyLocality
         (
-            const TPM_HANDLE& policySession, 
+            const TPM_HANDLE& policySession,
             TPMA_LOCALITY locality
         );
 
@@ -3440,11 +3440,11 @@ public:
         /// <param name = "operation"> The comparison to make </param>
         void PolicyNV
         (
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& nvIndex, 
-            const TPM_HANDLE& policySession, 
-            const ByteVec& operandB, 
-            UINT16 offset, 
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& nvIndex,
+            const TPM_HANDLE& policySession,
+            const ByteVec& operandB,
+            UINT16 offset,
             TPM_EO operation
         );
 
@@ -3458,9 +3458,9 @@ public:
         /// <param name = "operation"> The comparison to make </param>
         void PolicyCounterTimer
         (
-            const TPM_HANDLE& policySession, 
-            const ByteVec& operandB, 
-            UINT16 offset, 
+            const TPM_HANDLE& policySession,
+            const ByteVec& operandB,
+            UINT16 offset,
             TPM_EO operation
         );
 
@@ -3471,7 +3471,7 @@ public:
         /// <param name = "code"> The allowed commandCode </param>
         void PolicyCommandCode
         (
-            const TPM_HANDLE& policySession, 
+            const TPM_HANDLE& policySession,
             TPM_CC code
         );
 
@@ -3488,7 +3488,7 @@ public:
         /// <param name = "cpHashA"> The cpHash added to the policy </param>
         void PolicyCpHash
         (
-            const TPM_HANDLE& policySession, 
+            const TPM_HANDLE& policySession,
             const ByteVec& cpHashA
         );
 
@@ -3501,7 +3501,7 @@ public:
         /// <param name = "nameHash"> The digest to be added to the policy </param>
         void PolicyNameHash
         (
-            const TPM_HANDLE& policySession, 
+            const TPM_HANDLE& policySession,
             const ByteVec& nameHash
         );
 
@@ -3515,9 +3515,9 @@ public:
         ///        policySessionpolicyDigest </param>
         void PolicyDuplicationSelect
         (
-            const TPM_HANDLE& policySession, 
-            const ByteVec& objectName, 
-            const ByteVec& newParentName, 
+            const TPM_HANDLE& policySession,
+            const ByteVec& objectName,
+            const ByteVec& newParentName,
             BYTE includeObject
         );
 
@@ -3533,10 +3533,10 @@ public:
         ///        signed by keySign </param>
         void PolicyAuthorize
         (
-            const TPM_HANDLE& policySession, 
-            const ByteVec& approvedPolicy, 
-            const ByteVec& policyRef, 
-            const ByteVec& keySign, 
+            const TPM_HANDLE& policySession,
+            const ByteVec& approvedPolicy,
+            const ByteVec& policyRef,
+            const ByteVec& keySign,
             const TPMT_TK_VERIFIED& checkTicket
         );
 
@@ -3569,7 +3569,7 @@ public:
         ///        NO if NV Index is required not to have been written </param>
         void PolicyNvWritten
         (
-            const TPM_HANDLE& policySession, 
+            const TPM_HANDLE& policySession,
             BYTE writtenSet
         );
 
@@ -3581,7 +3581,7 @@ public:
         /// <param name = "templateHash"> The digest to be added to the policy </param>
         void PolicyTemplate
         (
-            const TPM_HANDLE& policySession, 
+            const TPM_HANDLE& policySession,
             const ByteVec& templateHash
         );
 
@@ -3598,8 +3598,8 @@ public:
         ///        Auth Index: None </param>
         void PolicyAuthorizeNV
         (
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& nvIndex, 
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& nvIndex,
             const TPM_HANDLE& policySession
         );
 
@@ -3626,10 +3626,10 @@ public:
         ///           name - The name of the created object </returns>
         void CreatePrimary
         (
-            const TPM_HANDLE& primaryHandle, 
-            const TPMS_SENSITIVE_CREATE& inSensitive, 
-            const TPMT_PUBLIC& inPublic, 
-            const ByteVec& outsideInfo, 
+            const TPM_HANDLE& primaryHandle,
+            const TPMS_SENSITIVE_CREATE& inSensitive,
+            const TPMT_PUBLIC& inPublic,
+            const ByteVec& outsideInfo,
             const vector<TPMS_PCR_SELECTION>& creationPCR
         );
 
@@ -3644,8 +3644,8 @@ public:
         /// <param name = "state"> YES if the enable should be SET, NO if the enable should be CLEAR </param>
         void HierarchyControl
         (
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& enable, 
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& enable,
             BYTE state
         );
 
@@ -3664,8 +3664,8 @@ public:
         ///        If the authPolicy is an Empty Buffer, then this field shall be TPM_ALG_NULL. </param>
         void SetPrimaryPolicy
         (
-            const TPM_HANDLE& authHandle, 
-            const ByteVec& authPolicy, 
+            const TPM_HANDLE& authHandle,
+            const ByteVec& authPolicy,
             TPM_ALG_ID hashAlg
         );
 
@@ -3700,7 +3700,7 @@ public:
         ///        to be CLEAR. </param>
         void ClearControl
         (
-            const TPM_HANDLE& auth, 
+            const TPM_HANDLE& auth,
             BYTE disable
         );
 
@@ -3712,7 +3712,7 @@ public:
         /// <param name = "newAuth"> New authorization value </param>
         void HierarchyChangeAuth
         (
-            const TPM_HANDLE& authHandle, 
+            const TPM_HANDLE& authHandle,
             const ByteVec& newAuth
         );
 
@@ -3738,9 +3738,9 @@ public:
         ///        A value of zero indicates that a reboot is required. </param>
         void DictionaryAttackParameters
         (
-            const TPM_HANDLE& lockHandle, 
-            UINT32 newMaxTries, 
-            UINT32 newRecoveryTime, 
+            const TPM_HANDLE& lockHandle,
+            UINT32 newMaxTries,
+            UINT32 newRecoveryTime,
             UINT32 lockoutRecovery
         );
 
@@ -3755,8 +3755,8 @@ public:
         ///        Presence be asserted </param>
         void PP_Commands
         (
-            const TPM_HANDLE& auth, 
-            const vector<TPM_CC>& setList, 
+            const TPM_HANDLE& auth,
+            const vector<TPM_CC>& setList,
             const vector<TPM_CC>& clearList
         );
 
@@ -3769,7 +3769,7 @@ public:
         ///        selection </param>
         void SetAlgorithmSet
         (
-            const TPM_HANDLE& authHandle, 
+            const TPM_HANDLE& authHandle,
             UINT32 algorithmSet
         );
 
@@ -3789,9 +3789,9 @@ public:
         ///        TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE. </param>
         void FieldUpgradeStart
         (
-            const TPM_HANDLE& authorization, 
-            const TPM_HANDLE& keyHandle, 
-            const ByteVec& fuDigest, 
+            const TPM_HANDLE& authorization,
+            const TPM_HANDLE& keyHandle,
+            const ByteVec& fuDigest,
             const TPMU_SIGNATURE& manifestSignature
         );
 
@@ -3847,8 +3847,8 @@ public:
         ///        persistentHandle </param>
         void EvictControl
         (
-            const TPM_HANDLE& auth, 
-            const TPM_HANDLE& objectHandle, 
+            const TPM_HANDLE& auth,
+            const TPM_HANDLE& objectHandle,
             const TPM_HANDLE& persistentHandle
         );
 
@@ -3868,7 +3868,7 @@ public:
         /// <param name = "newTime"> New Clock setting in milliseconds </param>
         void ClockSet
         (
-            const TPM_HANDLE& auth, 
+            const TPM_HANDLE& auth,
             UINT64 newTime
         );
 
@@ -3880,7 +3880,7 @@ public:
         /// <param name = "rateAdjust"> Adjustment to current Clock update rate </param>
         void ClockRateAdjust
         (
-            const TPM_HANDLE& auth, 
+            const TPM_HANDLE& auth,
             TPM_CLOCK_ADJUST rateAdjust
         );
 
@@ -3893,8 +3893,8 @@ public:
         ///           capabilityData - The capability data </returns>
         void GetCapability
         (
-            TPM_CAP capability, 
-            UINT32 property, 
+            TPM_CAP capability,
+            UINT32 property,
             UINT32 propertyCount
         );
 
@@ -3915,8 +3915,8 @@ public:
         /// <param name = "publicInfo"> The public parameters of the NV area </param>
         void NV_DefineSpace
         (
-            const TPM_HANDLE& authHandle, 
-            const ByteVec& auth, 
+            const TPM_HANDLE& authHandle,
+            const ByteVec& auth,
             const TPMS_NV_PUBLIC& publicInfo
         );
 
@@ -3928,7 +3928,7 @@ public:
         ///        Auth Index: None </param>
         void NV_UndefineSpace
         (
-            const TPM_HANDLE& authHandle, 
+            const TPM_HANDLE& authHandle,
             const TPM_HANDLE& nvIndex
         );
 
@@ -3942,7 +3942,7 @@ public:
         ///        Auth Role: USER </param>
         void NV_UndefineSpaceSpecial
         (
-            const TPM_HANDLE& nvIndex, 
+            const TPM_HANDLE& nvIndex,
             const TPM_HANDLE& platform
         );
 
@@ -3966,9 +3966,9 @@ public:
         /// <param name = "offset"> The octet offset into the NV Area </param>
         void NV_Write
         (
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& nvIndex, 
-            const ByteVec& data, 
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& nvIndex,
+            const ByteVec& data,
             UINT16 offset
         );
 
@@ -3981,7 +3981,7 @@ public:
         ///        Auth Index: None </param>
         void NV_Increment
         (
-            const TPM_HANDLE& authHandle, 
+            const TPM_HANDLE& authHandle,
             const TPM_HANDLE& nvIndex
         );
 
@@ -3995,8 +3995,8 @@ public:
         /// <param name = "data"> The data to extend </param>
         void NV_Extend
         (
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& nvIndex, 
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& nvIndex,
             const ByteVec& data
         );
 
@@ -4011,8 +4011,8 @@ public:
         /// <param name = "bits"> The data to OR with the current contents </param>
         void NV_SetBits
         (
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& nvIndex, 
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& nvIndex,
             UINT64 bits
         );
 
@@ -4025,7 +4025,7 @@ public:
         ///        Auth Index: None </param>
         void NV_WriteLock
         (
-            const TPM_HANDLE& authHandle, 
+            const TPM_HANDLE& authHandle,
             const TPM_HANDLE& nvIndex
         );
 
@@ -4049,9 +4049,9 @@ public:
         /// <returns> data - The data read </returns>
         void NV_Read
         (
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& nvIndex, 
-            UINT16 size, 
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& nvIndex,
+            UINT16 size,
             UINT16 offset
         );
 
@@ -4064,7 +4064,7 @@ public:
         ///        Auth Index: None </param>
         void NV_ReadLock
         (
-            const TPM_HANDLE& authHandle, 
+            const TPM_HANDLE& authHandle,
             const TPM_HANDLE& nvIndex
         );
 
@@ -4075,7 +4075,7 @@ public:
         /// <param name = "newAuth"> New authorization value </param>
         void NV_ChangeAuth
         (
-            const TPM_HANDLE& nvIndex, 
+            const TPM_HANDLE& nvIndex,
             const ByteVec& newAuth
         );
 
@@ -4103,12 +4103,12 @@ public:
         ///                       by signHandle </returns>
         void NV_Certify
         (
-            const TPM_HANDLE& signHandle, 
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& nvIndex, 
-            const ByteVec& qualifyingData, 
-            const TPMU_SIG_SCHEME& inScheme, 
-            UINT16 size, 
+            const TPM_HANDLE& signHandle,
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& nvIndex,
+            const ByteVec& qualifyingData,
+            const TPMU_SIG_SCHEME& inScheme,
+            UINT16 size,
             UINT16 offset
         );
 
@@ -4122,8 +4122,8 @@ public:
         ///           capabilitiesData - List of capabilities </returns>
         void AC_GetCapability
         (
-            const TPM_HANDLE& ac, 
-            TPM_AT capability, 
+            const TPM_HANDLE& ac,
+            TPM_AT capability,
             UINT32 count
         );
 
@@ -4141,9 +4141,9 @@ public:
         /// <returns> acDataOut - May include AC specific data or information about an error. </returns>
         void AC_Send
         (
-            const TPM_HANDLE& sendObject, 
-            const TPM_HANDLE& authHandle, 
-            const TPM_HANDLE& ac, 
+            const TPM_HANDLE& sendObject,
+            const TPM_HANDLE& authHandle,
+            const TPM_HANDLE& ac,
             const ByteVec& acDataIn
         );
 
@@ -4162,10 +4162,10 @@ public:
         ///        policySessionpolicyDigest </param>
         void Policy_AC_SendSelect
         (
-            const TPM_HANDLE& policySession, 
-            const ByteVec& objectName, 
-            const ByteVec& authHandleName, 
-            const ByteVec& acName, 
+            const TPM_HANDLE& policySession,
+            const ByteVec& objectName,
+            const ByteVec& authHandleName,
+            const ByteVec& acName,
             BYTE includeObject
         );
 
@@ -4177,7 +4177,7 @@ public:
         /// <param name = "startTimeout"> The start timeout value for the ACT in seconds </param>
         void ACT_SetTimeout
         (
-            const TPM_HANDLE& actHandle, 
+            const TPM_HANDLE& actHandle,
             UINT32 startTimeout
         );
 

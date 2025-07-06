@@ -14,7 +14,7 @@
 
 using namespace TpmCpp;
 
-class CTpmBaseClass 
+class CTpmBaseClass
 {
 public:
     virtual ~CTpmBaseClass();
@@ -24,7 +24,7 @@ public:
     TpmDevice*  GetDevice(void);
     void        SetLogCallback(std::function<void(const std::string&, const bool&)> cb);
     std::string GetLastError(void) const;
-    void        Log(const std::string& msg, bool isError = false);    
+    void        Log(const std::string& msg, bool isError = false);
     //void        ClearStringstream(std::stringstream& ss);
 
 protected:

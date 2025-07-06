@@ -6,7 +6,7 @@
 #include <thread>
 #include <atomic>
 
-class CTpmBaseClass 
+class CTpmBaseClass
 {
 
 public:

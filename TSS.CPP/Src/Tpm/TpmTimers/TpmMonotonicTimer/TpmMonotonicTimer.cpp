@@ -1,10 +1,10 @@
-﻿#include "TpmOrdinaryTimer.h"
+﻿#include "TpmMonotonicTimer.h"
 
 #include <string>       // std::string
 #include <iostream>     // std::cout
 #include <sstream>      // std::stringstream
 
-CTpmOrdinaryTimer::~CTpmOrdinaryTimer()
+CTpmMonotonicTimer::~CTpmMonotonicTimer()
 {
     try
     {
@@ -30,7 +30,7 @@ CTpmOrdinaryTimer::~CTpmOrdinaryTimer()
     }
 }
 
-CTpmOrdinaryTimer::CTpmOrdinaryTimer(CTpmSharedDevice* sharedDevice)
+CTpmMonotonicTimer::CTpmMonotonicTimer(CTpmSharedDevice* sharedDevice)
     : m_useSharedTpmDevice(sharedDevice != nullptr), m_sharedTpmDevice(sharedDevice)
 {
     try
@@ -39,14 +39,14 @@ CTpmOrdinaryTimer::CTpmOrdinaryTimer(CTpmSharedDevice* sharedDevice)
         {
             m_sharedTpmDevice = sharedDevice;
             std::stringstream ss;
-            ss << "[CTpmOrdinaryTimer] uses shared CTpmSharedDevice\n";
+            ss << "[CTpmMonotonicTimer] uses shared CTpmSharedDevice\n";
             Log(ss.str());
         }
         else
         {
             m_sharedTpmDevice = new CTpmSharedDevice();
             std::stringstream ss;
-            ss << "[CTpmOrdinaryTimer] uses local  CTpmSharedDevice\n";
+            ss << "[CTpmMonotonicTimer] uses local  CTpmSharedDevice\n";
             Log(ss.str());
         }
 
@@ -61,12 +61,12 @@ CTpmOrdinaryTimer::CTpmOrdinaryTimer(CTpmSharedDevice* sharedDevice)
     }
 }
 
-CTpmSharedDevice* CTpmOrdinaryTimer::GetTpmSharedDevice(void)
+CTpmSharedDevice* CTpmMonotonicTimer::GetTpmSharedDevice(void)
 {
     return m_sharedTpmDevice;
 }
 
-bool CTpmOrdinaryTimer::Release(void)
+bool CTpmMonotonicTimer::Release(void)
 {
     bool fncReturn = false;
 
@@ -102,7 +102,7 @@ bool CTpmOrdinaryTimer::Release(void)
     return fncReturn;
 }
 
-bool CTpmOrdinaryTimer::Initialize(void)
+bool CTpmMonotonicTimer::Initialize(void)
 {
     bool fncReturn = false;
 
@@ -130,7 +130,7 @@ bool CTpmOrdinaryTimer::Initialize(void)
     return fncReturn;
 }
 
-bool CTpmOrdinaryTimer::StartWatchdog(int intervalSeconds)
+bool CTpmMonotonicTimer::StartWatchdog(int intervalSeconds /*=5*/)
 {
     bool fncReturn = false;
 
@@ -140,45 +140,34 @@ bool CTpmOrdinaryTimer::StartWatchdog(int intervalSeconds)
 
         if (m_watchdogRunning)
         {
-            Log("Watchdog already running.");
+            Log("Monotonic Watchdog already running.");
             return false;
         }
 
         m_watchdogRunning = true;
+
         m_watchdogThread = std::thread([this, intervalSeconds]()
             {
                 while (m_watchdogRunning)
                 {
                     try
                     {
-                        Log("[Watchdog] Checking TPM availability...");
+                        Log("[Monotonic Watchdog] Checking TPM availability...");
 
                         if (!m_sharedTpmDevice->IsTpmAvailable())
                         {
-                            Log("[Watchdog] TPM unavailable! Attempting recovery...", true);
+                            Log("[Monotonic Watchdog] TPM unavailable! Attempting recovery...", true);
                             m_sharedTpmDevice->RecoverTpm(5);
                         }
                         else
                         {
-                            Log("[Watchdog] TPM OK.");
+                            Log("[Monotonic Watchdog] TPM OK.");
 
-                            // ordinary counter increment
-                            m_watchdogCounter++;
-
-                            // 8-byte big endian buffer
-                            std::vector<BYTE> writeData(8, 0x00);
-                            UINT64 tmp = m_watchdogCounter;
-                            for (int i = 7; i >= 0; --i)
-                            {
-                                writeData[i] = tmp & 0xFF;
-                                tmp >>= 8;
-                            }
-
-                            // write to NV
-                            tpm->NV_Write(TPM_RH::OWNER, TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX, writeData, 0);
+                            // increment
+                            tpm->NV_Increment(TPM_RH::OWNER, TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX);
 
                             // read back
-                            auto readVal = tpm->NV_Read(TPM_RH::OWNER, TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX, 8, 0);
+                            auto readVal = tpm->NV_Read(TPM_RH::OWNER, TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX, 8, 0);
                             UINT64 newCounter = 0;
                             if (readVal.size() >= 8)
                             {
@@ -189,29 +178,33 @@ bool CTpmOrdinaryTimer::StartWatchdog(int intervalSeconds)
                                 }
                             }
 
-                            Log("[Watchdog] Ordinary counter value: " + std::to_string(newCounter));
+                            Log("[Monotonic Watchdog] Counter value: " + std::to_string(newCounter));
 
-                            if (newCounter != m_watchdogCounter)
+                            if (newCounter != m_watchdogCounter + 1)
                             {
-                                Log("[Watchdog] Ordinary counter mismatch! Triggering recovery.", true);
+                                Log("[Monotonic Watchdog] Counter mismatch! Triggering recovery.", true);
                                 m_sharedTpmDevice->RecoverTpm(5);
                             }
+
+                            m_watchdogCounter = newCounter;
                         }
                     }
                     catch (const std::exception& ex)
                     {
-                        Log(std::string("[Watchdog] exception: ") + ex.what(), true);
+                        std::stringstream ss;
+                        ss << "[Monotonic Watchdog] exception: " << ex.what();
+                        Log(ss.str(), true);
                     }
                     catch (...)
                     {
-                        Log("[Watchdog] unknown exception", true);
+                        Log("[Monotonic Watchdog] unknown exception.", true);
                     }
 
                     std::this_thread::sleep_for(std::chrono::seconds(intervalSeconds));
                 }
             });
 
-        Log("Watchdog started.");
+        Log("Monotonic Watchdog started.");
 
         fncReturn = true;
     }
@@ -233,7 +226,7 @@ bool CTpmOrdinaryTimer::StartWatchdog(int intervalSeconds)
     return fncReturn;
 }
 
-bool CTpmOrdinaryTimer::StopWatchdog(void)
+bool CTpmMonotonicTimer::StopWatchdog(void)
 {
     bool fncReturn = false;
 
@@ -241,13 +234,19 @@ bool CTpmOrdinaryTimer::StopWatchdog(void)
     {
         if (!tpm) return false;
 
+        if (!m_watchdogRunning)
+        {
+            Log("Monotonic Watchdog not running.");
+            return false;
+        }
+
         m_watchdogRunning = false;
+
         if (m_watchdogThread.joinable())
         {
             m_watchdogThread.join();
+            Log("Monotonic Watchdog stopped.");
         }
-
-        Log("Watchdog stopped.");
 
         fncReturn = true;
     }
@@ -269,7 +268,7 @@ bool CTpmOrdinaryTimer::StopWatchdog(void)
     return fncReturn;
 }
 
-bool CTpmOrdinaryTimer::OrdinaryDefineWatchdogCounter(void)
+bool CTpmMonotonicTimer::NVDefineWatchdogCounter(void)
 {
     bool fncReturn = false;
 
@@ -277,7 +276,7 @@ bool CTpmOrdinaryTimer::OrdinaryDefineWatchdogCounter(void)
     {
         if (!tpm) return false;
 
-        UINT32 nvIndex = TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX;
+        UINT32 nvIndex = TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX;
 
         // NV index var mı diye kontrol et
         auto resp = tpm->GetCapability(TPM_CAP::HANDLES, nvIndex, 1);
@@ -286,7 +285,7 @@ bool CTpmOrdinaryTimer::OrdinaryDefineWatchdogCounter(void)
         {
             if (h == nvIndex)
             {
-                Log("Ordinary NV Counter already defined.");
+                Log("Monotonic NV Counter already defined.");
                 return true;
             }
         }
@@ -299,33 +298,34 @@ bool CTpmOrdinaryTimer::OrdinaryDefineWatchdogCounter(void)
         nvAttrs |= TPMA_NV::AUTHREAD;
         nvAttrs |= TPMA_NV::OWNERWRITE;
         nvAttrs |= TPMA_NV::OWNERREAD;
+        nvAttrs |= TPMA_NV::COUNTER;
 
         // define
         TPMS_NV_PUBLIC nvPub(nvIndex, TPM_ALG_ID::SHA256, nvAttrs, {}, 8);*/
-        TPMS_NV_PUBLIC nvPub(TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX, TPM_ALG_ID::SHA256,
-            TPMA_NV::AUTHWRITE | TPMA_NV::AUTHREAD | TPMA_NV::OWNERWRITE | TPMA_NV::OWNERREAD, {}, 8);
+        TPMS_NV_PUBLIC nvPub(TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX, TPM_ALG_ID::SHA256,
+            TPMA_NV::AUTHWRITE | TPMA_NV::AUTHREAD | TPMA_NV::COUNTER | TPMA_NV::OWNERWRITE | TPMA_NV::OWNERREAD, {}, 8);
 
         tpm->NV_DefineSpace(TPM_RH::OWNER, {}, nvPub);
-        Log("Ordinary NV Counter defined successfully.");
+        Log("Monotonic NV Counter defined successfully.");
 
-        // ilk değer olarak 0 yaz
-        std::vector<BYTE> zeroData(8, 0x00);
-        tpm->NV_Write(TPM_RH::OWNER, nvIndex, zeroData, 0);
-        Log("Ordinary NV Counter initialized to 0.");
+        // Monotonic counter için NV_Write yapılamaz!
+        //std::vector<BYTE> zeroData(8, 0x00);
+        //tpm->NV_Write(TPM_RH::OWNER, nvIndex, zeroData, 0);
+        //Log("Monotonic NV Counter initialized to 0.");
 
         fncReturn = true;
     }
     catch (const std::exception& ex)
     {
         std::stringstream ss;
-        ss << "OrdinaryDefineWatchdogCounter exception: " << ex.what() << std::endl;
+        ss << "MonotonicDefineWatchdogCounter exception: " << ex.what() << std::endl;
         Log(ss.str(), true);
         fncReturn = false;
     }
     catch (...)
     {
         std::stringstream ss;
-        ss << "OrdinaryDefineWatchdogCounter unknown exception." << std::endl;
+        ss << "MonotonicDefineWatchdogCounter unknown exception." << std::endl;
         Log(ss.str(), true);
         fncReturn = false;
     }
@@ -333,7 +333,7 @@ bool CTpmOrdinaryTimer::OrdinaryDefineWatchdogCounter(void)
     return fncReturn;
 }
 
-bool CTpmOrdinaryTimer::OrdinaryUndefineWatchdogCounter(void)
+bool CTpmMonotonicTimer::NVUndefineWatchdogCounter(bool fullFactoryReset)
 {
     bool fncReturn = false;
 
@@ -341,9 +341,15 @@ bool CTpmOrdinaryTimer::OrdinaryUndefineWatchdogCounter(void)
     {
         if (!tpm) return false;
 
-        UINT32 nvIndex = TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX;
+        if (!fullFactoryReset)
+        {
+            Log("NVUndefineWatchdogCounter skipped (fullFactoryReset == false).");
+            return true;
+        }
 
-        // NV index var mı diye kontrol et
+        UINT32 nvIndex = TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX;
+
+        // NV index var mı kontrol
         auto resp = tpm->GetCapability(TPM_CAP::HANDLES, nvIndex, 1);
         auto handles = dynamic_cast<TPML_HANDLE*>(&*resp.capabilityData)->handle;
 
@@ -357,30 +363,28 @@ bool CTpmOrdinaryTimer::OrdinaryUndefineWatchdogCounter(void)
             }
         }
 
-        if (!found)
+        if (found)
         {
-            Log("Ordinary NV Counter does not exist, no undefine needed.");
-            return true;
+            tpm->NV_UndefineSpace(TPM_RH::OWNER, nvIndex);
+            Log("Monotonic NV Counter successfully undefined.");
         }
-
-        // NV_UndefineSpace
-        tpm->NV_UndefineSpace(TPM_RH::OWNER, nvIndex);
-        Log("Ordinary NV Counter successfully undefined.");
+        else
+        {
+            Log("Monotonic NV Counter does not exist, undefine skipped.");
+        }
 
         fncReturn = true;
     }
     catch (const std::exception& ex)
     {
         std::stringstream ss;
-        ss << "OrdinaryUndefineWatchdogCounter exception: " << ex.what() << std::endl;
+        ss << "NVUndefineWatchdogCounter exception: " << ex.what() << std::endl;
         Log(ss.str(), true);
         fncReturn = false;
     }
     catch (...)
     {
-        std::stringstream ss;
-        ss << "OrdinaryUndefineWatchdogCounter unknown exception." << std::endl;
-        Log(ss.str(), true);
+        Log("NVUndefineWatchdogCounter unknown exception.", true);
         fncReturn = false;
     }
 
@@ -388,7 +392,7 @@ bool CTpmOrdinaryTimer::OrdinaryUndefineWatchdogCounter(void)
 }
 
 
-bool CTpmOrdinaryTimer::InitWatchdogCounter(void)
+bool CTpmMonotonicTimer::InitWatchdogCounter(void)
 {
     bool fncReturn = false;
 
@@ -396,14 +400,25 @@ bool CTpmOrdinaryTimer::InitWatchdogCounter(void)
     {
         if (!tpm) return false;
 
-        if (!OrdinaryDefineWatchdogCounter())
+        UINT32 nvIndex = TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX;
+
+        // define etmeyi garantile
+        if (!NVDefineWatchdogCounter())
         {
-            Log("Ordinary counter define failed.", true);
+            Log("Monotonic counter define failed.", true);
             return false;
         }
 
+        // monotonic counter'da:
+        // define edildikten sonra ilk NV_Increment çağrılmadan NV_Read yapılamaz
+        // bu yüzden önce increment edip, sonra okumak zorundayız
+
+        // ilk increment
+        tpm->NV_Increment(TPM_RH::OWNER, nvIndex);
+        Log("Monotonic NV Counter incremented for initialization.");
+
         // oku
-        auto readVal = tpm->NV_Read(TPM_RH::OWNER, TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX, 8, 0);
+        auto readVal = tpm->NV_Read(TPM_RH::OWNER, TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX, 8, 0);
         UINT64 value = 0;
         if (readVal.size() >= 8)
         {
@@ -416,7 +431,7 @@ bool CTpmOrdinaryTimer::InitWatchdogCounter(void)
 
         m_watchdogCounter = value;
 
-        Log("[Watchdog] Ordinary counter initial value: " + std::to_string(m_watchdogCounter));
+        Log("[Watchdog] Monotonic counter initial value: " + std::to_string(m_watchdogCounter));
 
         fncReturn = true;
     }
@@ -438,7 +453,7 @@ bool CTpmOrdinaryTimer::InitWatchdogCounter(void)
     return fncReturn;
 }
 
-bool CTpmOrdinaryTimer::ResetWatchdogCounter(void)
+bool CTpmMonotonicTimer::ResetWatchdogCounter(void)
 {
     bool fncReturn = false;
 
@@ -446,17 +461,54 @@ bool CTpmOrdinaryTimer::ResetWatchdogCounter(void)
     {
         if (!tpm) return false;
 
-        UINT32 nvIndex = TpmOrdinaryTimerNS::ORDINARY_COUNTER_NV_INDEX;
+        UINT32 nvIndex = TpmMonotonicTimerNS::MONOTONIC_COUNTER_NV_INDEX;
 
-        // 8-byte sıfır
-        std::vector<BYTE> zeroData(8, 0x00);
+        // önce index tanımlı mı bak
+        auto resp = tpm->GetCapability(TPM_CAP::HANDLES, nvIndex, 1);
+        auto handles = dynamic_cast<TPML_HANDLE*>(&*resp.capabilityData)->handle;
 
-        tpm->NV_Write(TPM_RH::OWNER, nvIndex, zeroData, 0);
+        bool found = false;
+        for (auto h : handles)
+        {
+            if (h == nvIndex)
+            {
+                found = true;
+                break;
+            }
+        }
 
-        m_watchdogCounter = 0;
+        if (found)
+        {
+            tpm->NV_UndefineSpace(TPM_RH::OWNER, nvIndex);
+            Log("Monotonic NV Counter undefined for reset.");
+        }
 
-        Log("Ordinary NV Counter reset to 0.");
-        return true;
+        // tekrar define
+        if (!NVDefineWatchdogCounter())
+        {
+            Log("Monotonic NV Counter redefine failed after reset.", true);
+            return false;
+        }
+
+        // ilk increment
+        tpm->NV_Increment(TPM_RH::OWNER, nvIndex);
+        Log("Monotonic NV Counter re-incremented after reset.");
+
+        // read
+        auto readVal = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 8, 0);
+        UINT64 value = 0;
+        if (readVal.size() >= 8)
+        {
+            for (int i = 0; i < 8; ++i)
+            {
+                value <<= 8;
+                value |= readVal[i];
+            }
+        }
+        m_watchdogCounter = value;
+
+        Log("Monotonic NV Counter reset to value: " + std::to_string(m_watchdogCounter));
+        fncReturn = true;
 
         fncReturn = true;
     }

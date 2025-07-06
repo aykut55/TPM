@@ -5084,7 +5084,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_AUTH_RESPONSE(*this); }
 }; // class TPMS_AUTH_RESPONSE
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_TDES for the union TPMU_SYM_DETAILS
 /// </summary>
 class _DLLEXP_ TPMS_TDES_SYM_DETAILS : public TPMS_NULL_UNION
@@ -5110,7 +5110,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_TDES_SYM_DETAILS(*this); }
 }; // class TPMS_TDES_SYM_DETAILS
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_AES for the union TPMU_SYM_DETAILS </summary>
 class _DLLEXP_ TPMS_AES_SYM_DETAILS : public TPMS_NULL_UNION
 {
@@ -5135,7 +5135,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_AES_SYM_DETAILS(*this); }
 }; // class TPMS_AES_SYM_DETAILS
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_SM4 for the union TPMU_SYM_DETAILS </summary>
 class _DLLEXP_ TPMS_SM4_SYM_DETAILS : public TPMS_NULL_UNION
 {
@@ -5160,7 +5160,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_SM4_SYM_DETAILS(*this); }
 }; // class TPMS_SM4_SYM_DETAILS
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_CAMELLIA for the union
 /// TPMU_SYM_DETAILS </summary>
 class _DLLEXP_ TPMS_CAMELLIA_SYM_DETAILS : public TPMS_NULL_UNION
@@ -5186,7 +5186,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_CAMELLIA_SYM_DETAILS(*this); }
 }; // class TPMS_CAMELLIA_SYM_DETAILS
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_ANY for the union TPMU_SYM_DETAILS </summary>
 class _DLLEXP_ TPMS_ANY_SYM_DETAILS : public TPMS_NULL_UNION
 {
@@ -5211,7 +5211,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_ANY_SYM_DETAILS(*this); }
 }; // class TPMS_ANY_SYM_DETAILS
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_XOR for the union TPMU_SYM_DETAILS </summary>
 class _DLLEXP_ TPMS_XOR_SYM_DETAILS : public TPMS_NULL_UNION
 {
@@ -5236,7 +5236,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_XOR_SYM_DETAILS(*this); }
 }; // class TPMS_XOR_SYM_DETAILS
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SYM_DETAILS
 /// </summary>
 class _DLLEXP_ TPMS_NULL_SYM_DETAILS : public TPMS_NULL_UNION
@@ -5789,7 +5789,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_SCHEME_XOR(*this); }
 }; // class TPMS_SCHEME_XOR
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union
 /// TPMU_SCHEME_KEYEDHASH </summary>
 class _DLLEXP_ TPMS_NULL_SCHEME_KEYEDHASH : public TPMS_NULL_UNION
@@ -6023,7 +6023,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_SIG_SCHEME_ECDAA(*this); }
 }; // class TPMS_SIG_SCHEME_ECDAA
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SIG_SCHEME </summary>
 class _DLLEXP_ TPMS_NULL_SIG_SCHEME : public TPMS_NULL_UNION
 {
@@ -6311,7 +6311,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_KDF_SCHEME_KDF1_SP800_108(*this); }
 }; // class TPMS_KDF_SCHEME_KDF1_SP800_108
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_KDF_SCHEME </summary>
 class _DLLEXP_ TPMS_NULL_KDF_SCHEME : public TPMS_NULL_UNION
 {
@@ -6374,7 +6374,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMT_KDF_SCHEME(*this); }
 }; // class TPMT_KDF_SCHEME
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_ASYM_SCHEME
 /// </summary>
 class _DLLEXP_ TPMS_NULL_ASYM_SCHEME : public TPMS_NULL_UNION
@@ -7052,7 +7052,7 @@ public:
     virtual TpmStructure* Clone() const { return new TPMS_SIGNATURE_ECSCHNORR(*this); }
 }; // class TPMS_SIGNATURE_ECSCHNORR
 
-/// <summary> Custom data structure representing an empty element (i.e. the one with 
+/// <summary> Custom data structure representing an empty element (i.e. the one with
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SIGNATURE </summary>
 class _DLLEXP_ TPMS_NULL_SIGNATURE : public TPMS_NULL_UNION
 {
@@ -16694,7 +16694,7 @@ public:
     /// Sets the publicPart and privatePart memebers. </summary>
     void CreateKey();
 
-    /// <summary>Sign the dataToSign byte array using the given signing scheme. 
+    /// <summary>Sign the dataToSign byte array using the given signing scheme.
     /// If the keys does not have a scheme of its own (i.e. was configuted with a NULL scheme),
     /// sigScheme must specify the same scheme or be a NULL scheme (TPMS_NULL_SIG_SCHEME). </summary>
     SignResponse Sign(const ByteVec& dataToSign, const TPMU_SIG_SCHEME& sigScheme) const;
