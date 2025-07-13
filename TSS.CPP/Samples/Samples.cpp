@@ -3385,6 +3385,9 @@ void clearStringstream(std::stringstream& ss)
     ss.clear();
 }
 
+#include <direct.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "TpmSharedDevice.h"
 #include "TpmClockReader.h"
 #include "TpmOrdinaryTimer.h"
@@ -4234,29 +4237,6 @@ void Samples::RunAllSamplesAT()
 
     }
 
-    CTpmSlotSecurity* pTpmSlotSecurity = new CTpmSlotSecurity(pTpmSharedDevice);
-    {
-        int iterationCount = 0;
-        int maxIterationCount = 3;
-        int watchdogRunningTimeSec = 10;
-
-        pTpmSlotSecurity->SetLogCallback([](const std::string& msg, bool isError) {
-            if (isError)
-                std::cerr << msg << std::endl;
-            else
-                std::cout << msg << std::endl;
-            }
-        );
-
-        if (!pTpmSlotSecurity->Initialize())
-        {
-            std::cerr << "Failed to initialize TPM SlotSecurity" << std::endl;
-            return;
-        }
-
-
-    }
-
     CTpmSlotManager* pTpmSlotManager = new CTpmSlotManager(pTpmSharedDevice);
     {
         int iterationCount = 0;
@@ -4276,6 +4256,328 @@ void Samples::RunAllSamplesAT()
             std::cerr << "Failed to initialize TPM Monotonic Timer" << std::endl;
             return;
         }
+    }
+
+
+    CTpmSlotSecurity* pTpmSlotSecurity = new CTpmSlotSecurity(pTpmSharedDevice);
+    {
+        UINT32 slotNo = 0x00000125;
+        UINT32 slotSize = 32;
+        std::string pin = "1234";
+
+        if (!pTpmSlotSecurity->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM SlotSecurity" << std::endl;
+            return;
+        }
+
+        if (pTpmSlotSecurity->IsSlotDefined(slotNo))
+        {
+            if (!pTpmSlotSecurity->UndefinePinProtectedSlot(slotNo, pin))
+            {
+                std::cerr << "UndefinePinProtectedSlot failed" << std::endl;
+                return;
+            }
+        }
+
+        //
+        // define
+        //        
+        if (!pTpmSlotSecurity->DefinePinProtectedSlot(slotNo, slotSize, pin))
+        {
+            std::cerr << "DefinePinProtectedSlot failed." << std::endl;
+        }
+
+        //
+        // write
+        //
+        std::vector<BYTE> dataToWrite = { 0x11, 0x22, 0x33, 0x44 };
+        if (!pTpmSlotSecurity->WritePinProtectedSlot(slotNo, pin, dataToWrite))
+        {
+            std::cerr << "Write to slot failed." << std::endl;
+        }
+
+        //
+        // read
+        //
+        auto readData = pTpmSlotSecurity->ReadPinProtectedSlot(slotNo, pin, slotSize);
+
+        std::cout << "Read data: ";
+        for (auto b : readData) std::cout << std::hex << (int)b << " ";
+        std::cout << std::endl;
+
+
+        //
+        // validate
+        //
+        if (std::equal(dataToWrite.begin(), dataToWrite.end(), readData.begin()))
+        {
+            std::cout << "Data validated OK." << std::endl;
+        }
+        else
+        {
+            std::cerr << "Data mismatch!" << std::endl;
+        }
+
+
+
+        //
+        // 4) Test wrong PIN
+        //
+        std::string wrongPin = "9999";
+
+        std::vector<BYTE> fakeData = { 0xAA, 0xBB, 0xCC, 0xDD };
+
+        if (!pTpmSlotSecurity->WritePinProtectedSlot(slotNo, wrongPin, fakeData))
+        {
+            std::cout << "Write failed as expected with wrong PIN." << std::endl;
+        }
+        else
+        {
+            std::cerr << "Unexpectedly succeeded writing with wrong PIN!" << std::endl;
+        }
+
+        auto readWrong = pTpmSlotSecurity->ReadPinProtectedSlot(slotNo, wrongPin, slotSize);
+
+        if (readWrong.empty())
+        {
+            std::cout << "Read failed as expected with wrong PIN." << std::endl;
+        }
+        else
+        {
+            std::cerr << "Unexpectedly read data with wrong PIN!" << std::endl;
+        }
+
+        //
+        // Versioned slot write
+        //
+        std::vector<BYTE> myPayload = { 0x10, 0x20, 0x30, 0x40 };
+        UINT32 myVersion = 1;
+
+        if (!pTpmSlotSecurity->WriteVersionedSlot(slotNo, pin, myVersion, myPayload))
+        {
+            std::cerr << "WriteVersionedSlot failed." << std::endl;
+        }
+
+        //
+        // Versioned slot read
+        //
+        std::pair<UINT32, std::vector<BYTE>> versionedData = pTpmSlotSecurity->ReadVersionedSlot(slotNo, pin, slotSize);
+
+        UINT32 readVersion = versionedData.first;
+        std::vector<BYTE> readPayload = versionedData.second;
+
+        std::cout << "Version: " << readVersion << std::endl;
+        std::cout << "Payload: ";
+        for (auto b : readPayload) std::cout << std::hex << (int)b << " ";
+        std::cout << std::endl;
+
+        //
+        // check
+        //
+        if (readVersion == myVersion &&
+            std::equal(myPayload.begin(), myPayload.end(), readPayload.begin()))
+        {
+            std::cout << "Versioned slot data verified OK." << std::endl;
+        }
+        else
+        {
+            std::cerr << "Versioned slot data mismatch." << std::endl;
+        }
+
+
+#if 1
+        //c++ hatsını cozersem, burası da acılacak
+        //
+        // backup all
+        //
+        
+        std::string backupFolder = "./nv_backup";
+#ifdef _WIN32
+        _mkdir(backupFolder.c_str());
+#else
+        mkdir(backupFolder.c_str(), 0777);
+#endif
+
+        //
+        // backup
+        //
+        if (!pTpmSlotSecurity->BackupSlot(slotNo, pin, backupFolder + "/nv_backup.dat"))
+        {
+            std::cerr << "BackupSlot failed." << std::endl;
+        }
+
+        //
+        // restore
+        //
+        if (!pTpmSlotSecurity->RestoreSlot(slotNo, pin, backupFolder + "/nv_backup.dat"))
+        {
+            std::cerr << "RestoreSlot failed." << std::endl;
+        }
+
+
+        //
+        // yeniden doğrula
+        //
+        auto recheck1 = pTpmSlotSecurity->ReadVersionedSlot(slotNo, pin, slotSize);
+        if (recheck1.first == myVersion &&
+            std::equal(myPayload.begin(), myPayload.end(), recheck1.second.begin()))
+        {
+            std::cout << "Restore verified OK." << std::endl;
+        }
+        else
+        {
+            std::cerr << "Restore data mismatch." << std::endl;
+        }
+
+
+        //
+        // SLOT NO, PIN ve BACKUP DOSYASI TANIMI
+        //
+        std::string backupFile = backupFolder + "/nv_backup2.dat";
+
+        //
+        // 1. SLOT TANIMLI MI?
+        //
+        if (!pTpmSlotSecurity->IsSlotDefined(slotNo))
+        {
+            std::cout << "[INFO] Slot tanımlı değil. Tanımlanıyor..." << std::endl;
+            pTpmSlotSecurity->DefinePinProtectedSlot(slotNo, slotSize, pin);
+            pTpmSlotSecurity->WriteVersionedSlot(slotNo, pin, myVersion, myPayload);
+        }
+
+        //
+        // 2. BACKUP
+        //
+        if (!pTpmSlotSecurity->BackupSlot(slotNo, pin, backupFile))
+        {
+            std::cerr << "[ERROR] BackupSlot failed." << std::endl;
+        }
+        else
+        {
+            std::cout << "[INFO] Backup completed successfully." << std::endl;
+        }
+
+        //
+        // 3. SLOT'U YOK ET
+        //
+        if (!pTpmSlotSecurity->UndefinePinProtectedSlot(slotNo, pin))
+        {
+            std::cerr << "[ERROR] Undefine failed." << std::endl;
+        }
+        else
+        {
+            std::cout << "[INFO] Slot silindi (Undefine edildi)." << std::endl;
+        }
+
+        //
+        // 4. YENİDEN VAR MI KONTROL
+        //
+        if (pTpmSlotSecurity->IsSlotDefined(slotNo))
+        {
+            std::cerr << "[ERROR] Slot hala tanımlı, silinememiş!" << std::endl;
+        }
+        else
+        {
+            std::cout << "[INFO] Slot gerçekten silinmiş." << std::endl;
+        }
+
+        //
+        // 5. RESTORE
+        //
+        if (!pTpmSlotSecurity->RestoreSlot(slotNo, pin, backupFile))
+        {
+            std::cerr << "[ERROR] RestoreSlot failed." << std::endl;
+        }
+        else
+        {
+            std::cout << "[INFO] Restore başarılı." << std::endl;
+        }
+
+        //
+        // 6. DOĞRULAMA
+        //
+        auto recheck = pTpmSlotSecurity->ReadVersionedSlot(slotNo, pin, slotSize);
+        if (recheck.first == myVersion &&
+            std::equal(myPayload.begin(), myPayload.end(), recheck.second.begin()))
+        {
+            std::cout << "[SUCCESS] Restore verified OK." << std::endl;
+        }
+        else
+        {
+            std::cerr << "[ERROR] Restore data mismatch!" << std::endl;
+        }
+
+
+        //
+        // backup all
+        //
+        if (!pTpmSlotSecurity->BackupAllSlots(backupFolder))
+        {
+            std::cerr << "BackupAllSlots failed." << std::endl;
+        }
+
+        //
+        // restore all
+        //
+        if (!pTpmSlotSecurity->RestoreAllSlots(backupFolder))
+        {
+            std::cerr << "RestoreAllSlots failed." << std::endl;
+        }
+
+        //
+        // yeniden doğrula
+        //
+        recheck = pTpmSlotSecurity->ReadVersionedSlot(slotNo, pin, slotSize);
+        if (recheck.first == myVersion &&
+            std::equal(myPayload.begin(), myPayload.end(), recheck.second.begin()))
+        {
+            std::cout << "Restore verified OK." << std::endl;
+        }
+        else
+        {
+            std::cerr << "Restore data mismatch." << std::endl;
+        }
+
+
+
+        //
+        // backup all
+        //
+        if (!pTpmSlotSecurity->BackupAllSlots(backupFolder))
+        {
+            std::cerr << "BackupAllSlots failed." << std::endl;
+        }
+
+        //
+        // restore all
+        //
+        if (!pTpmSlotSecurity->RestoreAllSlots(backupFolder))
+        {
+            std::cerr << "RestoreAllSlots failed." << std::endl;
+        }
+
+        //
+        // yeniden doğrula
+        //
+        recheck = pTpmSlotSecurity->ReadVersionedSlot(slotNo, pin, slotSize);
+        if (recheck.first == myVersion &&
+            std::equal(myPayload.begin(), myPayload.end(), recheck.second.begin()))
+        {
+            std::cout << "Restore verified OK." << std::endl;
+        }
+        else
+        {
+            std::cerr << "Restore data mismatch." << std::endl;
+        }
+#endif
+
+
+
+
+
+
+
     }
 
     delete pTpmSlotManager;

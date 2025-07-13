@@ -108,7 +108,7 @@ bool CTpmSharedDevice::Initialize(void)
             tpm->Startup(TPM_SU::CLEAR);
         }
 
-        RecoverTpm(0);
+        RecoverTpm(1);
 
         StartCallbacks();
 
@@ -297,8 +297,25 @@ void CTpmSharedDevice::RecoverTpm(int attemptCount)
 {
     try
     {
-        tpm->_AllowErrors()
-            .DictionaryAttackLockReset(TPM_RH::LOCKOUT);
+        TPMLockoutReset();
+        
+        // Lockout reset attempt
+        tpm->_AllowErrors().DictionaryAttackLockReset(TPM_RH::LOCKOUT);
+
+        if (!tpm->_LastCommandSucceeded())
+        {
+            if (m_recoverCallback)
+            {
+                m_recoverCallback("[CTpmSharedDevice] Lockout reset failed.", attemptCount);
+            }
+        }
+        else
+        {
+            if (m_recoverCallback)
+            {
+                m_recoverCallback("[CTpmSharedDevice] Lockout reset successful.", attemptCount);
+            }
+        }
 
         if (m_recoverCallback)
         {
@@ -439,3 +456,30 @@ void CTpmSharedDevice::TpmCallback(const ByteVec& command, const ByteVec& respon
     commandsInvoked[cmdCode]++;
     responses[rcCode]++;
 }
+
+void CTpmSharedDevice::TPMLockoutReset(void)
+{
+    TPM_HANDLE lockoutHandle = TPM_RH::LOCKOUT;
+    std::string lockoutPassword = "mypassword";  // Eğer böyle bir auth atandıysa
+
+    bool pinIsDefined = false;
+    if (!pinIsDefined)
+    {
+        lockoutHandle.SetAuth({}); // Eğer parola atanmadıysa (default TPM konfigürasyonu)
+        tpm->Clear(lockoutHandle);
+    }
+    else
+    {
+        lockoutHandle.SetAuth(std::vector<BYTE>(lockoutPassword.begin(), lockoutPassword.end()));
+        tpm->Clear(lockoutHandle);
+    }
+
+    tpm->_AllowErrors().DictionaryAttackLockReset(TPM_RH::LOCKOUT);
+    if (!tpm->_LastCommandSucceeded()) 
+    {
+        std::cerr << "Lockout reset failed. May need platform auth or simulator restart." << std::endl;
+    }
+}
+
+
+

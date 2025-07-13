@@ -20,6 +20,7 @@ public:
     void    StopHealthCheckLoop(void);
     void    SetRecoverCallback(std::function<void(const std::string&, int attemptCount)> cb);
     void    RecoverTpm(int attemptCount);
+    void    TPMLockoutReset(void);
 
 protected:
 
