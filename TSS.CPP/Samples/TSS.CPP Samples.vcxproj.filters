@@ -31,6 +31,18 @@
     <ClCompile Include="..\Src\Tpm\TpmTimers\TpmMonotonicTimer\TpmMonotonicTimer.cpp">
       <Filter>Src\Tpm\TpmTimers\TpmMonotonicTimer</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotReader\TpmSlotReader.cpp">
+      <Filter>Src\Tpm\TpmSlot\TpmSlotReader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotSecurity\TpmSlotSecurity.cpp">
+      <Filter>Src\Tpm\TpmSlot\TpmSlotSecurity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotWriter\TpmSlotWriter.cpp">
+      <Filter>Src\Tpm\TpmSlot\TpmSlotWriter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotManager\TpmSlotManager.cpp">
+      <Filter>Src\Tpm\TpmSlot\TpmSlotManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Samples.h" />
@@ -59,6 +71,18 @@
     </ClInclude>
     <ClInclude Include="..\Src\Tpm\TpmTimers\TpmMonotonicTimer\TpmMonotonicTimer.h">
       <Filter>Src\Tpm\TpmTimers\TpmMonotonicTimer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotReader\TpmSlotReader.h">
+      <Filter>Src\Tpm\TpmSlot\TpmSlotReader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotSecurity\TpmSlotSecurity.h">
+      <Filter>Src\Tpm\TpmSlot\TpmSlotSecurity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotWriter\TpmSlotWriter.h">
+      <Filter>Src\Tpm\TpmSlot\TpmSlotWriter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotManager\TpmSlotManager.h">
+      <Filter>Src\Tpm\TpmSlot\TpmSlotManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

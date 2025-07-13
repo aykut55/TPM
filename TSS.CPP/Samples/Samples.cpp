@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See the LICENSE file in the project root for full license information.
  */
@@ -3389,6 +3389,10 @@ void clearStringstream(std::stringstream& ss)
 #include "TpmClockReader.h"
 #include "TpmOrdinaryTimer.h"
 #include "TpmMonotonicTimer.h"
+#include "TpmSlotManager.h"
+#include "TpmSlotReader.h"
+#include "TpmSlotWriter.h"
+#include "TpmSlotSecurity.h"
 void Samples::RunAllSamplesAT()
 {
     std::stringstream ss;
@@ -3507,7 +3511,7 @@ void Samples::RunAllSamplesAT()
             pTpmClockReader->Log(ss.str());
         }
     }
-
+#if 0
     CTpmOrdinaryTimer* pTpmOrdinaryTimer = new CTpmOrdinaryTimer(pTpmSharedDevice);
     {
         int iterationCount = 0;
@@ -3738,11 +3742,555 @@ void Samples::RunAllSamplesAT()
 
         } while (iterationCount < maxIterationCount);
     }
+#endif
+    CTpmSlotWriter* pTpmSlotWriter = new CTpmSlotWriter(pTpmSharedDevice);
+    {
+        int iterationCount = 0;
+        int maxIterationCount = 3;
+        int watchdogRunningTimeSec = 10;
 
+        pTpmSlotWriter->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmSlotWriter->Initialize())
+        {
+            clearStringstream(ss);
+            ss << "Failed to initialize TPM SlotWriter" << std::endl;
+            pTpmSlotWriter->Log(ss.str(), true);
+
+            return;
+        }
+    }
+
+    CTpmSlotReader* pTpmSlotReader = new CTpmSlotReader(pTpmSharedDevice);
+    {
+        int iterationCount = 0;
+        int maxIterationCount = 3;
+        int watchdogRunningTimeSec = 10;
+
+        pTpmSlotReader->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmSlotReader->Initialize())
+        {
+            clearStringstream(ss);
+            ss << "Failed to initialize TPM SlotReader" << std::endl;
+            pTpmSlotWriter->Log(ss.str(), true);
+
+            return;
+        }
+    }
+
+    const UINT32 slotNo = 0;
+    {
+        pTpmSlotWriter->SetEndianness(Endianness::LittleEndian);
+        pTpmSlotReader->SetEndianness(Endianness::LittleEndian);
+
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+
+        std::string myString = "Merhaba CTpmStringWriter!";
+
+        // Slot'a yaz
+        if (!pTpmSlotWriter->WriteStringToSlot(slotNo, myString))
+        {
+            clearStringstream(ss);
+            ss << "WriteStringToSlot failed: " << pTpmSlotWriter->GetLastError() << std::endl;
+            pTpmSlotWriter->Log(ss.str(), true);
+
+            return;
+        }
+
+        std::cout << std::endl;
+        clearStringstream(ss);
+        ss << "[std::string] : WriteStringToSlot: " << myString << std::endl;
+        pTpmClockReader->Log(ss.str());
+        std::cout << std::endl;
+
+
+        // Slot'tan oku
+        std::string readBack = pTpmSlotReader->ReadStringFromSlot(slotNo);
+
+        if (readBack.empty())
+        {
+            clearStringstream(ss);
+            ss << "ReadStringFromSlot failed: " << pTpmSlotReader->GetLastError() << std::endl;
+            pTpmSlotReader->Log(ss.str(), true);
+
+            return;
+        }
+
+        std::cout << std::endl;
+        clearStringstream(ss);
+        ss << "[std::string] : Read back from slot: " << readBack << std::endl;
+        pTpmClockReader->Log(ss.str());
+        std::cout << std::endl;
+
+
+        // SlotClear: slotu 0x00 ile doldur
+        if (!pTpmSlotWriter->SlotClear(slotNo))
+        {
+            clearStringstream(ss);
+            ss << "SlotClear failed: " << pTpmSlotWriter->GetLastError() << std::endl;
+            pTpmSlotWriter->Log(ss.str(), true);
+        }
+        else
+        {
+            std::cout << "Slot cleared." << std::endl;
+
+            // SlotClear sonrası kontrol
+            std::string afterClear = pTpmSlotReader->ReadStringFromSlot(slotNo);
+            if (afterClear.empty())
+            {
+                std::cout << "SlotClear check: slot is empty (OK)." << std::endl;
+            }
+            else
+            {
+                std::cout << "SlotClear check: slot still contains data → [" << afterClear << "]" << std::endl;
+            }
+        }
+
+
+        // SlotFree: slotu tamamen sil
+        if (!pTpmSlotWriter->SlotFree(slotNo))
+        {
+            std::cerr << "SlotFree failed: " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Slot freed." << std::endl;
+
+            // SlotFree sonrası kontrol
+            std::string afterFree = pTpmSlotReader->ReadStringFromSlot(slotNo);
+            if (afterFree.empty())
+            {
+                std::cout << "SlotFree check: slot successfully undefined (OK)." << std::endl;
+            }
+            else
+            {
+                std::cout << "SlotFree check: unexpected data after undefine → [" << afterFree << "]" << std::endl;
+            }
+        }
+
+        pTpmSlotWriter->WriteStringToSlot(slotNo, myString);
+        std::cout << "[std::string] : WriteStringToSlot: " << myString << std::endl;
+        readBack = pTpmSlotReader->ReadStringFromSlot(slotNo);
+        std::cout << "[std::string] : Read back from slot: " << readBack << std::endl;
+
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+    }
+
+
+    const UINT32 byteSlot = 1;
+    BYTE myByte = 0xAB;
+    {
+        if (!pTpmSlotWriter->WriteByteToSlot(byteSlot, myByte))
+        {
+            std::cerr << "WriteByteToSlot failed: " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Wrote byte [0x" << std::hex << (int)myByte << "] to slot " << byteSlot << "." << std::endl;
+        }
+
+        BYTE readByte = pTpmSlotReader->ReadByteFromSlot(byteSlot);
+        std::cout << "Read back byte: [0x" << std::hex << (int)readByte << "]" << std::endl;
+
+        // simple check
+        if (readByte == myByte)
+        {
+            std::cout << "ReadByteFromSlot MATCH ✅ myByte and readByte both are [0x"
+                << std::hex << (int)myByte << "]" << std::endl;
+        }
+        else
+        {
+            std::cout << "ReadByteFromSlot MISMATCH ❌ wrote [0x"
+                << std::hex << (int)myByte
+                << "] but read back [0x" << (int)readByte << "]" << std::endl;
+        }
+    }
+
+
+    const UINT32 charSlot = 2;
+    char myChar = 'Z';
+    {
+        if (!pTpmSlotWriter->WriteCharToSlot(charSlot, myChar))
+        {
+            std::cerr << "WriteCharToSlot failed: " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Wrote char [" << myChar << "] to slot " << charSlot << "." << std::endl;
+        }
+
+        char readChar = pTpmSlotReader->ReadCharFromSlot(charSlot);
+        std::cout << "Read back char: [" << readChar << "]" << std::endl;
+    }
+
+    const UINT32 intSlot = 3;
+    int myInt = 12345678;
+    {
+        if (!pTpmSlotWriter->WriteIntToSlot(intSlot, myInt))
+        {
+            std::cerr << "WriteIntToSlot failed: " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Wrote int [" << myInt << "] to slot " << intSlot << "." << std::endl;
+        }
+
+        int readInt = pTpmSlotReader->ReadIntFromSlot(intSlot);
+        std::cout << "Read back int: [" << readInt << "]" << std::endl;
+    }
+
+    const UINT32 floatSlot = 4;
+    float myFloat = 123.456f;
+    {
+        if (!pTpmSlotWriter->WriteFloatToSlot(floatSlot, myFloat))
+        {
+            std::cerr << "WriteFloatToSlot failed: " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Wrote float [" << myFloat << "] to slot " << floatSlot << "." << std::endl;
+        }
+
+        float readFloat = pTpmSlotReader->ReadFloatFromSlot(floatSlot);
+        std::cout << "Read back float: [" << readFloat << "]" << std::endl;
+    }
+
+    const UINT32 doubleSlot = 5;
+    double myDouble = 98765.4321;
+    {
+        if (!pTpmSlotWriter->WriteDoubleToSlot(doubleSlot, myDouble))
+        {
+            std::cerr << "WriteDoubleToSlot failed: " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Wrote double [" << myDouble << "] to slot " << doubleSlot << "." << std::endl;
+        }
+
+        double readDouble = pTpmSlotReader->ReadDoubleFromSlot(doubleSlot);
+        std::cout << "Read back double: [" << readDouble << "]" << std::endl;
+    }
+
+
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    //
+    // CLEANUP
+    //
+    for (auto slot : { slotNo, byteSlot, charSlot, intSlot, floatSlot, doubleSlot})
+    {
+        if (!pTpmSlotWriter->SlotClear(slot))
+        {
+            std::cerr << "SlotClear failed for slot " << slot << ": " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Slot " << slot << " cleared." << std::endl;
+        }
+
+        if (!pTpmSlotWriter->SlotFree(slot))
+        {
+            std::cerr << "SlotFree failed for slot " << slot << ": " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Slot " << slot << " freed." << std::endl;
+        }
+
+        std::cout << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    //
+    // 5) BYTE VECTOR
+    //
+    const UINT32 byteArraySlot = 5;
+    std::vector<BYTE> myByteVector = { 0x10, 0x20, 0x30, 0x40, 0x50 };
+
+    if (!pTpmSlotWriter->WriteByteArrayToSlot(byteArraySlot, myByteVector))
+    {
+        std::cerr << "WriteByteArrayToSlot failed." << std::endl;
+    }
+    else
+    {
+        std::cout << "Wrote byte array to slot " << byteArraySlot << std::endl;
+    }
+
+    auto readByteVector = pTpmSlotReader->ReadByteArrayFromSlot(byteArraySlot, myByteVector.size());
+    std::cout << "Read back byte array: ";
+    for (auto b : readByteVector) std::cout << "0x" << std::hex << (int)b << " ";
+    std::cout << std::dec << std::endl;
+
+    //
+    // 4) CHAR VECTOR
+    //
+    const UINT32 charArraySlot = 4;
+    std::vector<char> myCharVector = { 'O', 'p', 'e', 'n', 'A', 'I' };
+
+    if (!pTpmSlotWriter->WriteCharArrayToSlot(charArraySlot, myCharVector))
+    {
+        std::cerr << "WriteCharArrayToSlot failed." << std::endl;
+    }
+    else
+    {
+        std::cout << "Wrote char array to slot " << charArraySlot << std::endl;
+    }
+
+    auto readCharVector = pTpmSlotReader->ReadCharArrayFromSlot(charArraySlot, myCharVector.size());
+    std::cout << "Read back char array: ";
+    for (auto c : readCharVector) std::cout << c;
+    std::cout << std::endl;
+
+
+
+
+    //
+    // 1) INT VECTOR
+    //
+    const UINT32 intArraySlot = 1;
+    std::vector<int> myIntVector = { 10, 20, 30, 40, 50 };
+
+    if (!pTpmSlotWriter->WriteIntArrayToSlot(intArraySlot, myIntVector))
+    {
+        std::cerr << "WriteIntArrayToSlot failed." << std::endl;
+    }
+    else
+    {
+        std::cout << "Wrote int array to slot " << intArraySlot << std::endl;
+    }
+
+    auto readIntVector = pTpmSlotReader->ReadIntArrayFromSlot(intArraySlot, myIntVector.size());
+    std::cout << "Read back int array: ";
+    for (auto v : readIntVector) std::cout << v << " ";
+    std::cout << std::endl;
+
+    //
+    // 2) FLOAT VECTOR
+    //
+    const UINT32 floatArraySlot = 2;
+    std::vector<float> myFloatVector = { 1.1f, 2.2f, 3.3f };
+
+    if (!pTpmSlotWriter->WriteFloatArrayToSlot(floatArraySlot, myFloatVector))
+    {
+        std::cerr << "WriteFloatArrayToSlot failed." << std::endl;
+    }
+    else
+    {
+        std::cout << "Wrote float array to slot " << floatArraySlot << std::endl;
+    }
+
+    auto readFloatVector = pTpmSlotReader->ReadFloatArrayFromSlot(floatArraySlot, myFloatVector.size());
+    std::cout << "Read back float array: ";
+    for (auto v : readFloatVector) std::cout << v << " ";
+    std::cout << std::endl;
+
+    //
+    // 3) DOUBLE VECTOR
+    //
+    const UINT32 doubleArraySlot = 3;
+    std::vector<double> myDoubleVector = { 11.11, 22.22, 33.33 };
+
+    if (!pTpmSlotWriter->WriteDoubleArrayToSlot(doubleArraySlot, myDoubleVector))
+    {
+        std::cerr << "WriteDoubleArrayToSlot failed." << std::endl;
+    }
+    else
+    {
+        std::cout << "Wrote double array to slot " << doubleArraySlot << std::endl;
+    }
+
+    auto readDoubleVector = pTpmSlotReader->ReadDoubleArrayFromSlot(doubleArraySlot, myDoubleVector.size());
+    std::cout << "Read back double array: ";
+    for (auto v : readDoubleVector) std::cout << v << " ";
+    std::cout << std::endl;
+
+    //
+    // 6) STRING VECTOR
+    //
+    const UINT32 stringArraySlot = 6;
+    std::vector<std::string> myStringVector = { "one", "two", "three" };
+
+    if (!pTpmSlotWriter->WriteStringArrayToSlot(stringArraySlot, myStringVector))
+    {
+        std::cerr << "WriteStringArrayToSlot failed." << std::endl;
+    }
+    else
+    {
+        std::cout << "Wrote string array to slot " << stringArraySlot << std::endl;
+    }
+
+    auto readStringVector = pTpmSlotReader->ReadStringArrayFromSlot(stringArraySlot);
+    std::cout << "Read back string array: ";
+    for (auto& s : readStringVector) std::cout << "[" << s << "] ";
+    std::cout << std::endl;
+
+
+    //
+    // CLEANUP
+    //
+    for (auto slot : { intArraySlot, floatArraySlot, doubleArraySlot, charArraySlot, byteArraySlot, stringArraySlot })
+    {
+        if (!pTpmSlotWriter->SlotClear(slot))
+        {
+            std::cerr << "SlotClear failed for slot " << slot << ": " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Slot " << slot << " cleared." << std::endl;
+        }
+
+        if (!pTpmSlotWriter->SlotFree(slot))
+        {
+            std::cerr << "SlotFree failed for slot " << slot << ": " << pTpmSlotWriter->GetLastError() << std::endl;
+        }
+        else
+        {
+            std::cout << "Slot " << slot << " freed." << std::endl;
+        }
+    }
+
+
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    {
+        auto slotStates = pTpmSlotWriter->SlotList();
+        std::cout << "Slot List:" << std::endl;
+
+        for (size_t i = 0; i < slotStates.size(); ++i)
+        {
+            UINT32 slotNo = slotStates[i].slotNo;
+            bool   isDefined = slotStates[i].isDefined;
+            SlotType type = slotStates[i].type;
+
+            std::string typeStr;
+            switch (type)
+            {
+                case SlotType::Int:    typeStr = "INT"; break;
+                case SlotType::Float:  typeStr = "FLOAT"; break;
+                case SlotType::Double: typeStr = "DOUBLE"; break;
+                case SlotType::String: typeStr = "STRING"; break;
+                case SlotType::Byte:   typeStr = "BYTE"; break;
+                case SlotType::Char:   typeStr = "CHAR"; break;
+                default:               typeStr = "UNKNOWN"; break;
+            }
+
+            std::cout << "  Slot " << slotNo
+                << ": " << (isDefined ? "defined" : "undefined")
+                << ", type=" << typeStr
+                << std::endl;
+        }
+
+        if (pTpmSlotWriter->WriteIntToSlot(0, 4242))
+        {
+            std::cout << "WriteIntToSlot(0, 4242) ok." << std::endl;
+        }
+
+        // SlotList kontrol
+        auto slots = pTpmSlotReader->SlotList();
+        std::cout << "Slot List:" << std::endl;
+
+        for (size_t i = 0; i < slots.size(); i++)
+        {
+            std::string typeStr;
+            switch (slots[i].type)
+            {
+                case SlotType::Int:    typeStr = "INT"; break;
+                case SlotType::Float:  typeStr = "FLOAT"; break;
+                case SlotType::Double: typeStr = "DOUBLE"; break;
+                case SlotType::String: typeStr = "STRING"; break;
+                case SlotType::Byte:   typeStr = "BYTE"; break;
+                case SlotType::Char:   typeStr = "CHAR"; break;
+                default:               typeStr = "UNKNOWN"; break;
+            }
+            std::cout << "  Slot " << slots[i].slotNo
+                << ": " << (slots[i].isDefined ? "defined" : "undefined")
+                << ", type=" << typeStr
+                << std::endl;
+        }
+
+    }
+
+    CTpmSlotSecurity* pTpmSlotSecurity = new CTpmSlotSecurity(pTpmSharedDevice);
+    {
+        int iterationCount = 0;
+        int maxIterationCount = 3;
+        int watchdogRunningTimeSec = 10;
+
+        pTpmSlotSecurity->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmSlotSecurity->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM SlotSecurity" << std::endl;
+            return;
+        }
+
+
+    }
+
+    CTpmSlotManager* pTpmSlotManager = new CTpmSlotManager(pTpmSharedDevice);
+    {
+        int iterationCount = 0;
+        int maxIterationCount = 3;
+        int watchdogRunningTimeSec = 10;
+
+        pTpmSlotManager->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmSlotManager->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM Monotonic Timer" << std::endl;
+            return;
+        }
+    }
+
+    delete pTpmSlotManager;
+
+    delete pTpmSlotSecurity;
+
+    delete pTpmSlotReader;
+
+    delete pTpmSlotWriter;
+
+#if 0
     delete pTpmMonotonicTimer;
 
     delete pTpmOrdinaryTimer;
-
+#endif
     delete pTpmClockReader;
 
     delete pTpmSharedDevice;

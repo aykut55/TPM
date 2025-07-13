@@ -1,19 +1,21 @@
 ﻿#pragma once
 
-#include <string>
-#include <sstream>
-#include <iomanip>
-#include <thread>
-#include <atomic>
+#include "TpmBaseClass.h"
+#include "TpmSharedDevice.h"
 
-class CTpmBaseClass
+class CTpmSlotManager : public CTpmBaseClass
 {
-
 public:
-    virtual ~CTpmBaseClass();
-             CTpmBaseClass();
+    virtual ~CTpmSlotManager();
+             CTpmSlotManager(CTpmSharedDevice* sharedDevice = nullptr);
+
+    CTpmSharedDevice* GetTpmSharedDevice(void);
+    bool              Release(void);
+    bool              Initialize(void);
 
 protected:
 
 private:
+    bool m_useSharedTpmDevice;
+    CTpmSharedDevice* m_sharedTpmDevice;
 };

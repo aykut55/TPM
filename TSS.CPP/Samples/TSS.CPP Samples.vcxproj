@@ -187,6 +187,10 @@
     <ClInclude Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotManager\TpmSlotManager.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotReader\TpmSlotReader.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotSecurity\TpmSlotSecurity.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotWriter\TpmSlotWriter.h" />
     <ClInclude Include="..\Src\Tpm\TpmTimers\TpmMonotonicTimer\TpmMonotonicTimer.h" />
     <ClInclude Include="..\Src\Tpm\TpmTimers\TpmOrdinaryTimer\TpmOrdinaryTimer.h" />
     <ClInclude Include="..\Src\Tpm\TpmTimers\TpmWatchdogTimer\TpmWatchdogTimer.h" />
@@ -211,6 +215,18 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotManager\TpmSlotManager.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotReader\TpmSlotReader.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotSecurity\TpmSlotSecurity.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotWriter\TpmSlotWriter.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmTimers\TpmMonotonicTimer\TpmMonotonicTimer.cpp">
