@@ -3389,6 +3389,7 @@ void clearStringstream(std::stringstream& ss)
 #include <stdlib.h>
 #include <stdio.h>
 #include "TpmSharedDevice.h"
+#include "TpmDictionaryAttack.h"
 #include "TpmClockReader.h"
 #include "TpmOrdinaryTimer.h"
 #include "TpmMonotonicTimer.h"
@@ -3396,6 +3397,25 @@ void clearStringstream(std::stringstream& ss)
 #include "TpmSlotReader.h"
 #include "TpmSlotWriter.h"
 #include "TpmSlotSecurity.h"
+#include "TpmRandom.h"
+#include "TpmCrypto.h"
+//#include "TpmHash.h"
+//#include "TpmSignature.h"
+
+#define TpmDictionaryAttack_Example             0
+#define TpmClockReader_Example                  0
+#define TpmOrdinaryTimer_Example                0
+#define TpmMonotonicTimer_Example               0    
+#define TpmSlotWriter_TpmSlotReader_Example     0
+#define TpmSlotSecurity_Example                 0
+#define TpmSlotSecurity_Example1                0
+#define TpmSlotSecurity_Example2                0
+#define TpmSlotSecurity_Example3                0
+#define TpmRandom_Example                       1
+#define TpmCrypto_Example                       1
+#define TpmHash_Example                         0
+#define TpmSignature_Example                    0
+
 void Samples::RunAllSamplesAT()
 {
     std::stringstream ss;
@@ -3419,6 +3439,17 @@ void Samples::RunAllSamplesAT()
             return;
         }
 
+        // The TPM maintains global dictionary attack remediation logic. A special
+        // authValue is needed to control it. This is LockoutAuth.
+        // Reset the lockout
+        // And set the TPM to be fairly forgiving for running the tests 
+        //pTpmSharedDevice->DictionaryAttackLockReset();
+        //std::cout << "DictionaryAttackLockReset is called..." << std::endl;
+
+        // Reset the lockout
+        //pTpmSharedDevice->TPMLockoutReset();
+        //std::cout << "TPMLockoutReset is called..." << std::endl;
+
         pTpmSharedDevice->GetTpm();
         pTpmSharedDevice->GetDevice();
 
@@ -3441,6 +3472,31 @@ void Samples::RunAllSamplesAT()
         }
     }
 
+#if TpmDictionaryAttack_Example
+    // The TPM maintains global dictionary attack remediation logic. A special
+    // authValue is needed to control it. This is LockoutAuth.
+    // Reset the lockout
+    // And set the TPM to be fairly forgiving for running the tests   
+    CTpmDictionaryAttack* pTpmDictionaryAttack = new CTpmDictionaryAttack(pTpmSharedDevice);
+    {
+        pTpmDictionaryAttack->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmDictionaryAttack->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM DictionaryAttack" << std::endl;
+            return;
+        }
+
+    }
+#endif
+
+#if TpmClockReader_Example
     CTpmClockReader* pTpmClockReader = new CTpmClockReader(pTpmSharedDevice);
     bool ignoreResetClockFailure = true;
     bool resetClockExampleEnabled = false;
@@ -3514,7 +3570,9 @@ void Samples::RunAllSamplesAT()
             pTpmClockReader->Log(ss.str());
         }
     }
-#if 0
+#endif
+
+#if TpmOrdinaryTimer_Example
     CTpmOrdinaryTimer* pTpmOrdinaryTimer = new CTpmOrdinaryTimer(pTpmSharedDevice);
     {
         int iterationCount = 0;
@@ -3629,7 +3687,9 @@ void Samples::RunAllSamplesAT()
 
         } while (iterationCount < maxIterationCount);
     }
+#endif
 
+#if TpmMonotonicTimer_Example    
     CTpmMonotonicTimer* pTpmMonotonicTimer = new CTpmMonotonicTimer(pTpmSharedDevice);
     {
         int iterationCount = 0;
@@ -3746,6 +3806,8 @@ void Samples::RunAllSamplesAT()
         } while (iterationCount < maxIterationCount);
     }
 #endif
+
+#if TpmSlotWriter_TpmSlotReader_Example
     CTpmSlotWriter* pTpmSlotWriter = new CTpmSlotWriter(pTpmSharedDevice);
     {
         int iterationCount = 0;
@@ -4257,8 +4319,9 @@ void Samples::RunAllSamplesAT()
             return;
         }
     }
+#endif
 
-
+#if TpmSlotSecurity_Example
     CTpmSlotSecurity* pTpmSlotSecurity = new CTpmSlotSecurity(pTpmSharedDevice);
     {
         UINT32 slotNo = 0x00000125;
@@ -4279,7 +4342,7 @@ void Samples::RunAllSamplesAT()
                 return;
             }
         }
-
+#if TpmSlotSecurity_Example1
         //
         // define
         //        
@@ -4384,14 +4447,9 @@ void Samples::RunAllSamplesAT()
         {
             std::cerr << "Versioned slot data mismatch." << std::endl;
         }
-
-
-#if 1
-        //c++ hatsını cozersem, burası da acılacak
-        //
-        // backup all
-        //
+#endif
         
+#if TpmSlotSecurity_Example2
         std::string backupFolder = "./nv_backup";
 #ifdef _WIN32
         _mkdir(backupFolder.c_str());
@@ -4508,39 +4566,6 @@ void Samples::RunAllSamplesAT()
             std::cerr << "[ERROR] Restore data mismatch!" << std::endl;
         }
 
-
-        //
-        // backup all
-        //
-        if (!pTpmSlotSecurity->BackupAllSlots(backupFolder))
-        {
-            std::cerr << "BackupAllSlots failed." << std::endl;
-        }
-
-        //
-        // restore all
-        //
-        if (!pTpmSlotSecurity->RestoreAllSlots(backupFolder))
-        {
-            std::cerr << "RestoreAllSlots failed." << std::endl;
-        }
-
-        //
-        // yeniden doğrula
-        //
-        recheck = pTpmSlotSecurity->ReadVersionedSlot(slotNo, pin, slotSize);
-        if (recheck.first == myVersion &&
-            std::equal(myPayload.begin(), myPayload.end(), recheck.second.begin()))
-        {
-            std::cout << "Restore verified OK." << std::endl;
-        }
-        else
-        {
-            std::cerr << "Restore data mismatch." << std::endl;
-        }
-
-
-
         //
         // backup all
         //
@@ -4573,27 +4598,892 @@ void Samples::RunAllSamplesAT()
 #endif
 
 
+#if TpmSlotSecurity_Example3
+        // Load AES key
+        if (!pTpmSlotSecurity->LoadAesKey())
+        {
+            std::cerr << "AES key load failed." << std::endl;
+            return;
+        }
+
+        // sample plaintext
+        std::vector<BYTE> plaintext = { 0x10, 0x20, 0x30, 0x40, 0x50 };
+        std::cout << "Plaintext: ";
+        for (auto b : plaintext) std::cout << std::hex << (int)b << " ";
+        std::cout << std::endl;
+
+        // encrypt
+        auto ciphertext = pTpmSlotSecurity->EncryptData(plaintext);
+        std::cout << "Ciphertext: ";
+        for (auto b : ciphertext) std::cout << std::hex << (int)b << " ";
+        std::cout << std::endl;
+
+        // decrypt
+        auto decrypted = pTpmSlotSecurity->DecryptData(ciphertext);
+        std::cout << "Decrypted: ";
+        for (auto b : decrypted) std::cout << std::hex << (int)b << " ";
+        std::cout << std::endl;
+
+        // check
+        if (decrypted == plaintext)
+        {
+            std::cout << "AES encryption/decryption successful." << std::endl;
+        }
+        else
+        {
+            std::cerr << "AES encryption/decryption failed!" << std::endl;
+        }
+#endif
+    }
+#endif
+
+#if TpmRandom_Example
+    CTpmRandom* pTpmRandom = new CTpmRandom(pTpmSharedDevice);
+    bool ignoreResetClockFailure = true;
+    bool resetClockExampleEnabled = false;
+    {
+        pTpmRandom->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmRandom->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM Clock Reader." << std::endl;
+            return;
+        }
+
+        auto rand = pTpmRandom->GetRandom(20);
+        std::cout << "random bytes:      " << rand << std::endl;
+
+        pTpmRandom->StirRandom({ 1, 2, 3 });
+
+        rand = pTpmRandom->GetRandom(20);
+        std::cout << "more random bytes: " << rand << std::endl;
+    }
+#endif
+
+#if TpmCrypto_Example
+    CTpmCrypto* pTpmCrypto = new CTpmCrypto(pTpmSharedDevice);
+    {
+        pTpmCrypto->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmCrypto->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM Clock Reader." << std::endl;
+            return;
+        }
+
+        //pTpmCrypto->EncryptDecryptSample();
+
+        {
+            std::vector<BYTE> encryptedByte, encryptedChar, encryptedInt, encryptedFloat, encryptedDouble, encryptedString, encryptedByteArray;
+
+            pTpmCrypto->EncryptByte(123, encryptedByte);
+            pTpmCrypto->EncryptChar('X', encryptedChar);
+            pTpmCrypto->EncryptInt(987654321, encryptedInt);
+            pTpmCrypto->EncryptFloat(3.1415f, encryptedFloat);
+            pTpmCrypto->EncryptDouble(2.718281828, encryptedDouble);
+            pTpmCrypto->EncryptString("Hello TPM", encryptedString);
+            pTpmCrypto->EncryptByteArray({ 1, 2, 3, 4, 5 }, encryptedByteArray);
+
+            BYTE decryptedByte;
+            char decryptedChar;
+            int decryptedInt;
+            float decryptedFloat;
+            double decryptedDouble;
+            std::string decryptedString;
+            std::vector<BYTE> decryptedByteArray;
+
+            // Varsayalım ki encrypt edilenler önceki örnekten geliyor:
+            pTpmCrypto->DecryptByte(encryptedByte, decryptedByte);
+            pTpmCrypto->DecryptChar(encryptedChar, decryptedChar);
+            pTpmCrypto->DecryptInt(encryptedInt, decryptedInt);
+            pTpmCrypto->DecryptFloat(encryptedFloat, decryptedFloat);
+            pTpmCrypto->DecryptDouble(encryptedDouble, decryptedDouble);
+            pTpmCrypto->DecryptString(encryptedString, decryptedString);
+            pTpmCrypto->DecryptByteArray(encryptedByteArray, decryptedByteArray);
+
+            // Ekrana yazdırmak istersen:
+            std::cout << "DecryptedByte: " << static_cast<int>(decryptedByte) << std::endl;
+            std::cout << "DecryptedChar: " << decryptedChar << std::endl;
+            std::cout << "DecryptedInt: " << decryptedInt << std::endl;
+            std::cout << "DecryptedFloat: " << decryptedFloat << std::endl;
+            std::cout << "DecryptedDouble: " << decryptedDouble << std::endl;
+            std::cout << "DecryptedString: " << decryptedString << std::endl;
+        }
+
+        {
+            std::vector<char> charArray = { 'a', 'b', 'c' };
+            std::vector<int> intArray = { 100, 200, 300 };
+            std::vector<float> floatArray = { 1.1f, 2.2f, 3.3f };
+            std::vector<double> doubleArray = { 11.11, 22.22, 33.33 };
+            std::vector<std::string> stringArray = { "foo", "bar", "baz" };
+
+            std::vector<BYTE> encryptedCharArray;
+            std::vector<BYTE> encryptedIntArray;
+            std::vector<BYTE> encryptedFloatArray;
+            std::vector<BYTE> encryptedDoubleArray;
+            std::vector<BYTE> encryptedStringArray;
+
+            pTpmCrypto->EncryptCharArray(charArray, encryptedCharArray);
+            pTpmCrypto->EncryptIntArray(intArray, encryptedIntArray);
+            pTpmCrypto->EncryptFloatArray(floatArray, encryptedFloatArray);
+            pTpmCrypto->EncryptDoubleArray(doubleArray, encryptedDoubleArray);
+            pTpmCrypto->EncryptStringArray(stringArray, encryptedStringArray);
+
+            std::vector<char> decryptedCharArray;
+            std::vector<int> decryptedIntArray;
+            std::vector<float> decryptedFloatArray;
+            std::vector<double> decryptedDoubleArray;
+            std::vector<std::string> decryptedStringArray;
+
+            pTpmCrypto->DecryptCharArray(encryptedCharArray, decryptedCharArray);
+            pTpmCrypto->DecryptIntArray(encryptedIntArray, decryptedIntArray);
+            pTpmCrypto->DecryptFloatArray(encryptedFloatArray, decryptedFloatArray);
+            pTpmCrypto->DecryptDoubleArray(encryptedDoubleArray, decryptedDoubleArray);
+            pTpmCrypto->DecryptStringArray(encryptedStringArray, decryptedStringArray);
+        }
+
+        {
+            std::string inputFile = "example.txt";
+            std::string encryptedFile = "example_encrypted.dat";
+            std::string decryptedFile = "example_decrypted.txt";
+
+            auto fileSize = pTpmCrypto->GetFileSize(inputFile);
+
+            if (pTpmCrypto->IsTooLargeForTpm(fileSize))
+            {
+                std::cerr << "Data is too large for TPM EncryptDecrypt. Use chunked encryption." << std::endl;
+            }
+            else
+            {
+
+            }
+
+            // Dosyayı şifrele
+            if (pTpmCrypto->EncryptFileChunked(inputFile, encryptedFile, 1024)) {
+                std::cout << "[Main] File encrypted successfully to " << encryptedFile << std::endl;
+            }
+            else {
+                std::cerr << "[Main] File encryption failed." << std::endl;
+            }
+
+            // Şifrelenmiş dosyayı geri çöz
+            if (pTpmCrypto->DecryptFileChunked(encryptedFile, decryptedFile)) {
+                std::cout << "[Main] File decrypted successfully to " << decryptedFile << std::endl;
+            }
+            else {
+                std::cerr << "[Main] File decryption failed." << std::endl;
+            }
+        }
+
+
+        //*******************************************************************************
+        //*******************************************************************************
+        //*******************************************************************************
+        //*******************************************************************************
+        //*******************************************************************************
+
+        {
+            std::string password = "my_secure_password";
+
+            bool usePersistentKey;
+            usePersistentKey = true;        // Kalıcı kullan (Bu hatali calisiyor)
+            usePersistentKey = false;       // Her defasında yeni üret   (Bu OK)
+            if (!pTpmCrypto->GenerateAndLoadAesKeyWithPassword(password, usePersistentKey))
+            {
+                std::cerr << "AES key generation with password failed!" << std::endl;
+                return ;
+            }
+
+            // BYTE
+            BYTE originalByte = 0x4F;
+            std::vector<BYTE> encryptedByte;
+            BYTE decryptedByte = 0;
+
+            if (pTpmCrypto->EncryptByteWithPassword(originalByte, password, encryptedByte) &&
+                pTpmCrypto->DecryptByteWithPassword(encryptedByte, password, decryptedByte))
+            {
+                std::cout << "[WithPassword] BYTE -> " << (int)decryptedByte << std::endl;
+            }
+
+            // INT
+            int originalInt = 42;
+            std::vector<BYTE> encryptedInt;
+            int decryptedInt = 0;
+
+            if (pTpmCrypto->EncryptIntWithPassword(originalInt, password, encryptedInt) &&
+                pTpmCrypto->DecryptIntWithPassword(encryptedInt, password, decryptedInt))
+            {
+                std::cout << "[WithPassword] INT -> " << decryptedInt << std::endl;
+            }
+
+            // FLOAT
+            float originalFloat = 3.14f;
+            std::vector<BYTE> encryptedFloat;
+            float decryptedFloat = 0.0f;
+
+            if (pTpmCrypto->EncryptFloatWithPassword(originalFloat, password, encryptedFloat) &&
+                pTpmCrypto->DecryptFloatWithPassword(encryptedFloat, password, decryptedFloat))
+            {
+                std::cout << "[WithPassword] FLOAT -> " << decryptedFloat << std::endl;
+            }
+
+            // DOUBLE
+            double originalDouble = 6.2831;
+            std::vector<BYTE> encryptedDouble;
+            double decryptedDouble = 0.0;
+
+            if (pTpmCrypto->EncryptDoubleWithPassword(originalDouble, password, encryptedDouble) &&
+                pTpmCrypto->DecryptDoubleWithPassword(encryptedDouble, password, decryptedDouble))
+            {
+                std::cout << "[WithPassword] DOUBLE -> " << decryptedDouble << std::endl;
+            }
+
+            // STRING
+            std::string originalStr = "Hello TPM with password!";
+            std::vector<BYTE> encryptedStr;
+            std::string decryptedStr;
+
+            if (pTpmCrypto->EncryptStringWithPassword(originalStr, password, encryptedStr) &&
+                pTpmCrypto->DecryptStringWithPassword(encryptedStr, password, decryptedStr))
+            {
+                std::cout << "[WithPassword] STRING -> " << decryptedStr << std::endl;
+            }
+        }
+        {
+            std::string password = "my_secure_password";
+
+            // BYTE ARRAY
+            std::vector<BYTE> originalByteArray = { 10, 20, 30, 40 };
+            std::vector<BYTE> encryptedByteArray;
+            std::vector<BYTE> decryptedByteArray;
+
+            if (pTpmCrypto->EncryptByteArrayWithPassword(originalByteArray, password, encryptedByteArray) &&
+                pTpmCrypto->DecryptByteArrayWithPassword(encryptedByteArray, password, decryptedByteArray))
+            {
+                std::cout << "[WithPassword] BYTE ARRAY decrypted -> ";
+                for (BYTE b : decryptedByteArray)
+                    std::cout << (int)b << " ";
+                std::cout << std::endl;
+            }
+
+            // CHAR ARRAY
+            std::vector<char> originalCharArray = { 'a', 'b', 'c' };
+            std::vector<BYTE> encryptedCharArray;
+            std::vector<char> decryptedCharArray;
+
+            if (pTpmCrypto->EncryptCharArrayWithPassword(originalCharArray, password, encryptedCharArray) &&
+                pTpmCrypto->DecryptCharArrayWithPassword(encryptedCharArray, password, decryptedCharArray))
+            {
+                std::cout << "[WithPassword] CHAR ARRAY decrypted -> ";
+                for (char c : decryptedCharArray) std::cout << c << " ";
+                std::cout << std::endl;
+            }
+
+            // INT ARRAY
+            std::vector<int> originalIntArray = { 1, 2, 3, 4 };
+            std::vector<BYTE> encryptedIntArray;
+            std::vector<int> decryptedIntArray;
+
+            if (pTpmCrypto->EncryptIntArrayWithPassword(originalIntArray, password, encryptedIntArray) &&
+                pTpmCrypto->DecryptIntArrayWithPassword(encryptedIntArray, password, decryptedIntArray))
+            {
+                std::cout << "[WithPassword] INT ARRAY decrypted -> ";
+                for (int v : decryptedIntArray) std::cout << v << " ";
+                std::cout << std::endl;
+            }
+
+            // FLOAT ARRAY
+            std::vector<float> originalFloatArray = { 1.1f, 2.2f, 3.3f };
+            std::vector<BYTE> encryptedFloatArray;
+            std::vector<float> decryptedFloatArray;
+
+            if (pTpmCrypto->EncryptFloatArrayWithPassword(originalFloatArray, password, encryptedFloatArray) &&
+                pTpmCrypto->DecryptFloatArrayWithPassword(encryptedFloatArray, password, decryptedFloatArray))
+            {
+                std::cout << "[WithPassword] FLOAT ARRAY decrypted -> ";
+                for (float v : decryptedFloatArray) std::cout << v << " ";
+                std::cout << std::endl;
+            }
+
+            // DOUBLE ARRAY
+            std::vector<double> originalDoubleArray = { 1.11, 2.22, 3.33 };
+            std::vector<BYTE> encryptedDoubleArray;
+            std::vector<double> decryptedDoubleArray;
+
+            if (pTpmCrypto->EncryptDoubleArrayWithPassword(originalDoubleArray, password, encryptedDoubleArray) &&
+                pTpmCrypto->DecryptDoubleArrayWithPassword(encryptedDoubleArray, password, decryptedDoubleArray))
+            {
+                std::cout << "[WithPassword] DOUBLE ARRAY decrypted -> ";
+                for (double v : decryptedDoubleArray) std::cout << v << " ";
+                std::cout << std::endl;
+            }
+
+            // STRING ARRAY
+            std::vector<std::string> originalStringArray = { "one", "two", "three" };
+            std::vector<BYTE> encryptedStringArray;
+            std::vector<std::string> decryptedStringArray;
+
+            if (pTpmCrypto->EncryptStringArrayWithPassword(originalStringArray, password, encryptedStringArray) &&
+                pTpmCrypto->DecryptStringArrayWithPassword(encryptedStringArray, password, decryptedStringArray))
+            {
+                std::cout << "[WithPassword] STRING ARRAY decrypted -> ";
+                for (const auto& s : decryptedStringArray) std::cout << s << " ";
+                std::cout << std::endl;
+            }
+        }
+
+/*
+        {
+            std::string password = "my_secure_password";
+
+            // Dosya yolları
+            std::string originalFile = "example.txt";
+            std::string encryptedFile = "test_input_encrypted.bin";
+            std::string decryptedFile = "test_input_decrypted.txt";
+
+            // Şifreleme
+            if (pTpmCrypto->EncryptFileWithPassword(originalFile, encryptedFile, password))
+            {
+                std::cout << "[WithPassword] File encrypted successfully to: " << encryptedFile << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] File encryption failed!" << std::endl;
+            }
+
+            // Şifre çözme
+            if (pTpmCrypto->DecryptFileWithPassword(encryptedFile, decryptedFile, password))
+            {
+                std::cout << "[WithPassword] File decrypted successfully to: " << decryptedFile << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] File decryption failed!" << std::endl;
+            }
+        }
+
+
+
+        {
+            std::string password = "my_secure_password";
+
+            // Ham veri (örnek olarak bir stringin byte hali)
+            std::string inputText = "Hello TPM AES";
+            std::vector<BYTE> inputData(inputText.begin(), inputText.end());
+            std::vector<BYTE> encryptedData;
+            std::vector<BYTE> decryptedData;
+
+            // EncryptDataWithPassword
+            if (pTpmCrypto->EncryptDataWithPassword(inputData, password, encryptedData))
+            {
+                std::cout << "[WithPassword] Raw data encrypted successfully. Size: " << encryptedData.size() << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] Raw data encryption failed!" << std::endl;
+            }
+
+            // DecryptDataWithPassword
+            if (pTpmCrypto->DecryptDataWithPassword(encryptedData, password, decryptedData))
+            {
+                std::string resultStr(decryptedData.begin(), decryptedData.end());
+                std::cout << "[WithPassword] Raw data decrypted successfully: " << resultStr << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] Raw data decryption failed!" << std::endl;
+            }
+        }
+
+        {
+            std::string password = "my_secure_password";
+
+            // EncryptByteArrayWithPassword
+            std::vector<BYTE> byteValues = { 10, 20, 30, 40, 50 };
+            std::vector<BYTE> encOut;
+            std::vector<BYTE> decOut;
+
+            if (pTpmCrypto->EncryptByteArrayWithPassword(byteValues, password, encOut))
+            {
+                std::cout << "[WithPassword] BYTE array encrypted." << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] BYTE array encryption failed!" << std::endl;
+            }
+
+            if (pTpmCrypto->DecryptByteArrayWithPassword(encOut, password, decOut))
+            {
+                std::cout << "[WithPassword] BYTE array decrypted: ";
+                for (BYTE b : decOut)
+                    std::cout << (int)b << " ";
+                std::cout << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] BYTE array decryption failed!" << std::endl;
+            }
+        }
+
+        {
+            std::string password = "array_test_password";
+
+            std::vector<std::string> originalStrings = { "Hello", "World", "TPM", "AES" };
+            std::vector<BYTE> encryptedStrings;
+            std::vector<std::string> decryptedStrings;
+
+            if (pTpmCrypto->EncryptStringArrayWithPassword(originalStrings, password, encryptedStrings))
+            {
+                std::cout << "[WithPassword] String array encrypted successfully." << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] String array encryption failed!" << std::endl;
+            }
+
+            if (pTpmCrypto->DecryptStringArrayWithPassword(encryptedStrings, password, decryptedStrings))
+            {
+                std::cout << "[WithPassword] String array decrypted: ";
+                for (const auto& s : decryptedStrings)
+                    std::cout << s << " ";
+                std::cout << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] String array decryption failed!" << std::endl;
+            }
+
+            std::vector<float> originalFloats = { 3.14f, 2.71f, 1.618f };
+            std::vector<BYTE> encryptedFloats;
+            std::vector<float> decryptedFloats;
+
+            if (pTpmCrypto->EncryptFloatArrayWithPassword(originalFloats, password, encryptedFloats))
+            {
+                std::cout << "[WithPassword] Float array encrypted." << std::endl;
+            }
+
+            if (pTpmCrypto->DecryptFloatArrayWithPassword(encryptedFloats, password, decryptedFloats))
+            {
+                std::cout << "[WithPassword] Float array decrypted: ";
+                for (float f : decryptedFloats)
+                    std::cout << f << " ";
+                std::cout << std::endl;
+            }
+
+            std::vector<int> originalInts = { 1, 2, 3, 100, 200 };
+            std::vector<BYTE> encryptedInts;
+            std::vector<int> decryptedInts;
+
+            if (pTpmCrypto->EncryptIntArrayWithPassword(originalInts, password, encryptedInts))
+            {
+                std::cout << "[WithPassword] Int array encrypted." << std::endl;
+            }
+
+            if (pTpmCrypto->DecryptIntArrayWithPassword(encryptedInts, password, decryptedInts))
+            {
+                std::cout << "[WithPassword] Int array decrypted: ";
+                for (int val : decryptedInts)
+                    std::cout << val << " ";
+                std::cout << std::endl;
+            }
+
+            std::vector<double> originalDoubles = { 3.1415926, 2.7182818, 1.4142135 };
+            std::vector<BYTE> encryptedDoubles;
+            std::vector<double> decryptedDoubles;
+
+            if (pTpmCrypto->EncryptDoubleArrayWithPassword(originalDoubles, password, encryptedDoubles))
+            {
+                std::cout << "[WithPassword] Double array encrypted." << std::endl;
+            }
+
+            if (pTpmCrypto->DecryptDoubleArrayWithPassword(encryptedDoubles, password, decryptedDoubles))
+            {
+                std::cout << "[WithPassword] Double array decrypted: ";
+                for (double d : decryptedDoubles)
+                    std::cout << d << " ";
+                std::cout << std::endl;
+            }
+
+            std::vector<char> originalChars = { 'A', 'B', 'C', 'D' };
+            std::vector<BYTE> encryptedChars;
+            std::vector<char> decryptedChars;
+
+            if (pTpmCrypto->EncryptCharArrayWithPassword(originalChars, password, encryptedChars))
+            {
+                std::cout << "[WithPassword] Char array encrypted." << std::endl;
+            }
+
+            if (pTpmCrypto->DecryptCharArrayWithPassword(encryptedChars, password, decryptedChars))
+            {
+                std::cout << "[WithPassword] Char array decrypted: ";
+                for (char c : decryptedChars)
+                    std::cout << c << " ";
+                std::cout << std::endl;
+            }
+        }
+
+
+        {
+            std::string inputFile = "example.txt";
+            std::string encryptedFile = "example.enc";
+            std::string decryptedFile = "example_dec.txt";
+            std::string password = "my_secure_password";
+
+            // Dosyayı şifrele
+            if (pTpmCrypto->EncryptFileWithPassword(inputFile, encryptedFile, password))
+            {
+                std::cout << "[WithPassword] File encrypted successfully." << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] File encryption failed." << std::endl;
+            }
+
+            // Dosyayı çöz
+            if (pTpmCrypto->DecryptFileWithPassword(encryptedFile, decryptedFile, password))
+            {
+                std::cout << "[WithPassword] File decrypted successfully." << std::endl;
+            }
+            else
+            {
+                std::cerr << "[WithPassword] File decryption failed." << std::endl;
+            }
+        }
+
+*/
+
+        {
+            const std::string password = "StrongPassword123!";
+            const std::string inputFile = "test_input.bin";
+            const std::string encryptedFile = "test_encrypted.bin";
+            const std::string decryptedFile = "test_decrypted.bin";
+
+            // Test dosyası oluştur
+            {
+                pTpmCrypto->BuildTestFile(inputFile);
+            }
+
+            if (!pTpmCrypto->GenerateAndLoadAesKeyWithPassword(password, false))
+            {
+                std::cerr << "AES key generation with password failed!" << std::endl;
+                return;
+            }
+
+            // Şifreleme
+            if (!pTpmCrypto->EncryptFileWithPasswordChunked(inputFile, encryptedFile, password))
+            {
+                std::cerr << "Encryption failed: " << pTpmCrypto->GetLastError() << std::endl;
+                return;
+            }
+
+            std::cout << "Encryption completed successfully." << std::endl;
+
+            // Çözme
+            if (!pTpmCrypto->DecryptFileWithPasswordChunked(encryptedFile, decryptedFile, password))
+            {
+                std::cerr << "Decryption failed: " << pTpmCrypto->GetLastError() << std::endl;
+                return;
+            }
+
+            std::cout << "Decryption completed successfully." << std::endl;
+
+            // Karşılaştırma
+            if (pTpmCrypto->CompareFiles(inputFile, decryptedFile))
+            {
+                std::cout << "SUCCESS: Decrypted file matches original." << std::endl;
+            }
+            else
+            {
+                std::cerr << "ERROR: Decrypted file does NOT match original!" << std::endl;
+            }
+        }
+
+
+        {
+            const std::string inputFile = "test_input_plain.bin";
+            const std::string encryptedFile = "test_encrypted_nopass.bin";
+            const std::string decryptedFile = "test_decrypted_nopass.bin";
+
+            // Örnek test dosyası oluştur (50 KB)
+            {
+                pTpmCrypto->BuildTestFile(inputFile);
+            }
+
+            // Chunked şifreleme (AES key TPM içinde)
+            if (!pTpmCrypto->EncryptFileChunked(inputFile, encryptedFile, 1024))
+            {
+                std::cerr << "Encryption failed: " << pTpmCrypto->GetLastError() << std::endl;
+                return;
+            }
+
+            std::cout << "Encryption completed successfully." << std::endl;
+
+            // Chunked çözme (AES key TPM içinde)
+            if (!pTpmCrypto->DecryptFileChunked(encryptedFile, decryptedFile))
+            {
+                std::cerr << "Decryption failed: " << pTpmCrypto->GetLastError() << std::endl;
+                return;
+            }
+
+            std::cout << "Decryption completed successfully." << std::endl;
+
+            // Dosya karşılaştırma
+            if (pTpmCrypto->CompareFiles(inputFile, decryptedFile))
+            {
+                std::cout << "SUCCESS: Decrypted file matches original." << std::endl;
+            }
+            else
+            {
+                std::cerr << "ERROR: Decrypted file does NOT match original!" << std::endl;
+            }
+        }
+
+        {
+            //Örneği(Şifreli Anahtar Kullanımıyla)
+            const std::string password = "123456";
+            const std::string inputFile = "example.txt";
+            const std::string encryptedFile = "encrypted_output.tpm";
+            const std::string decryptedFile = "decrypted_output.txt";
+            const UINT32 persistentHandle = 0x81000001;  // NV'deki sabit slot
+
+            if (pTpmCrypto->IsAesKeyHandleLoaded()) {
+                std::cout << "AES key is loaded." << std::endl;
+            }
+            else {
+                std::cout << "AES key is NOT loaded." << std::endl;
+            }
+
+            if (!pTpmCrypto->IsAesKeyHandleLoaded()) {
+                std::cout << "Key not loaded, generating..." << std::endl;
+            }
+            // AES anahtarını TPM içinde üret ve yükle (false = yeni anahtar oluştur)
+            if (!pTpmCrypto->GenerateAndLoadAesKeyWithPassword(password, true))
+            {
+                std::cerr << "AES key generation with password failed." << std::endl;
+                return;
+            }
+
+
+            if (pTpmCrypto->IsAesKeyHandleLoaded()) {
+                std::cout << "AES key is ready. Encrypting file..." << std::endl;
+            }
+            // Dosyayı şifrele
+            if (!pTpmCrypto->EncryptFileWithPasswordChunked(inputFile, encryptedFile, password))
+            {
+                std::cerr << "Encryption failed." << std::endl;
+                return;
+            }
+            std::cout << "Encryption successful." << std::endl;
+
+
+            if (pTpmCrypto->IsAesKeyHandleLoaded()) {
+                std::cout << "AES key is ready. Decrypting file..." << std::endl;
+            }
+            // Dosyayı geri çöz
+            if (!pTpmCrypto->DecryptFileWithPasswordChunked(encryptedFile, decryptedFile, password))
+            {
+                std::cerr << "Decryption failed." << std::endl;
+                return;
+            }
+            std::cout << "Decryption successful." << std::endl;
+
+
+            if (pTpmCrypto->IsAesKeyHandleLoaded()) 
+            {
+
+            }
+            // Anahtarı TPM'den RAM'den temizle (geçici handle silinir)
+            if (!pTpmCrypto->UnloadAndClearAesKeyWithPassword())
+            {
+                std::cerr << "Failed to unload and clear AES key." << std::endl;
+            }
+            else
+            {
+                std::cout << "AES key unloaded successfully." << std::endl;
+            }
+
+            // Eğer persistent handle varsa TPM NV'den sil
+            if (!pTpmCrypto->RemovePersistentAesKey(persistentHandle))
+            {
+                std::cerr << "Failed to remove persistent AES key." << std::endl;
+            }
+            else
+            {
+                std::cout << "Persistent AES key removed from TPM." << std::endl;
+            }
+            
+
+        }
+
+
+        {
+            const std::string password = "my_secure_password";
+            const std::string wrongPassword = "wrong_password";
+
+            // TPM Initialize
+            if (!pTpmCrypto->Initialize()) {
+                std::cerr << "TPM initialization failed.\n";
+                return;
+            }
+
+            // Generate and load AES key with password (if not already)
+            if (!pTpmCrypto->GenerateAndLoadAesKeyWithPassword(password, true)) {
+                std::cerr << "Failed to generate/load AES key.\n";
+                return;
+            }
+
+            // Check if password is valid for currently loaded AES key
+            if (!pTpmCrypto->IsPasswordValidForCurrentAesKey(password)) {
+                std::cerr << "Password is not valid for the current AES key.\n";
+                return;
+            }
+
+            std::cout << "Password is valid. Proceeding with encryption...\n";
+
+            // Sample plaintext
+            std::string plaintextStr = "This is a secret message.";
+            std::vector<BYTE> plainData(plaintextStr.begin(), plaintextStr.end());
+
+            // Encrypt
+            std::vector<BYTE> encryptedData;
+            if (!pTpmCrypto->EncryptDataWithPassword(plainData, password, encryptedData)) {
+                std::cerr << "Encryption failed.\n";
+                return;
+            }
+
+            std::cout << "Encryption succeeded. Encrypted data size: " << encryptedData.size() << " bytes\n";
+
+            // Decrypt
+            std::vector<BYTE> decryptedData;
+            if (!pTpmCrypto->DecryptDataWithPassword(encryptedData, password, decryptedData)) {
+                std::cerr << "Decryption failed.\n";
+                return;
+            }
+
+            std::string decryptedStr(decryptedData.begin(), decryptedData.end());
+            std::cout << "Decryption succeeded. Decrypted text: " << decryptedStr << "\n";
+
+            // Try decryption with wrong password (should fail)
+            std::cout << "\nTesting wrong password...\n";
+            if (!pTpmCrypto->IsPasswordValidForCurrentAesKey(wrongPassword)) {
+                std::cerr << "Wrong password rejected (as expected).\n";
+            }
+            else {
+                std::cerr << "Unexpected: wrong password considered valid!\n";
+            }
+
+        }
+
+        {
+            std::string password = "123456";
+            std::string inputFile = "plain_input.txt";
+            std::string encryptedFile = "encrypted_output.bin";
+            std::string decryptedFile = "encrypted_output.bin";
+
+            pTpmCrypto->BuildTestFile(inputFile);
+
+            // Initialize the TPM and AES key (will reuse or regenerate depending on flag)
+            if (!pTpmCrypto->GenerateAndLoadAesKeyWithPassword(password, true)) {
+                std::cerr << "Failed to generate/load AES key with password!" << std::endl;
+                return ;
+            }
+
+            if (!pTpmCrypto->IsPasswordValidForCurrentAesKey(password)) {
+                std::cerr << "Password hash does not match currently loaded key!" << std::endl;
+                return ;
+            }
+
+            if (!pTpmCrypto->EncryptFileWithPasswordChunked(inputFile, encryptedFile, password)) {
+                std::cerr << "Encryption failed!" << std::endl;
+                return ;
+            }
+
+            std::cout << "Encryption completed successfully." << std::endl;
 
 
 
 
+            // Load key from TPM using same password (will reuse NV-stored version if available)
+            if (!pTpmCrypto->GenerateAndLoadAesKeyWithPassword(password, true)) {
+                std::cerr << "Failed to generate/load AES key with password!" << std::endl;
+                return ;
+            }
+
+            if (!pTpmCrypto->IsPasswordValidForCurrentAesKey(password)) {
+                std::cerr << "Password does not match AES key in TPM!" << std::endl;
+                return ;
+            }
+
+            if (!pTpmCrypto->DecryptFileWithPasswordChunked(encryptedFile, decryptedFile, password)) {
+                std::cerr << "Decryption failed!" << std::endl;
+                return ;
+            }
+
+            std::cout << "Decryption completed successfully." << std::endl;
+
+
+            if (pTpmCrypto->CompareFiles(inputFile, decryptedFile))
+            {
+                std::cout << "SUCCESS: Decrypted file matches original." << std::endl;
+            }
+            else
+            {
+                std::cerr << "ERROR: Decrypted file does NOT match original!" << std::endl;
+            }
+
+
+        }
 
     }
+#endif
+
+#if TpmCrypto_Example
+    delete pTpmCrypto;
+#endif
+
+#if TpmRandom_Example
+    delete pTpmRandom;
+#endif
+
+#if TpmSlotSecurity_Example
+    delete pTpmSlotSecurity;
+#endif
+
+#if TpmSlotWriter_TpmSlotReader_Example
 
     delete pTpmSlotManager;
-
-    delete pTpmSlotSecurity;
 
     delete pTpmSlotReader;
 
     delete pTpmSlotWriter;
+#endif
 
-#if 0
+#if TpmMonotonicTimer_Example
     delete pTpmMonotonicTimer;
-
+#endif
+#if TpmOrdinaryTimer_Example
     delete pTpmOrdinaryTimer;
 #endif
+
+#if TpmClockReader_Example
     delete pTpmClockReader;
+#endif
+
+#if TpmDictionaryAttack_Example
+    delete pTpmDictionaryAttack;
+#endif
 
     delete pTpmSharedDevice;
 

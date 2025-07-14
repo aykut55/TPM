@@ -3,19 +3,15 @@
 #include "TpmBaseClass.h"
 #include "TpmSharedDevice.h"
 
-using namespace TpmCpp;
-
-class CTpmRandom : public CTpmBaseClass
+class CTpmDictionaryAttack : public CTpmBaseClass
 {
 public:
-    virtual ~CTpmRandom();
-             CTpmRandom(CTpmSharedDevice* sharedDevice = nullptr);
+    virtual ~CTpmDictionaryAttack();
+             CTpmDictionaryAttack(CTpmSharedDevice* sharedDevice = nullptr);
 
     CTpmSharedDevice* GetTpmSharedDevice(void);
     bool              Release(void);
     bool              Initialize(void);
-    ByteVec           GetRandom(UINT16 bytesRequested);
-    void              StirRandom(const ByteVec& inData);
 
 protected:
 

@@ -1,0 +1,413 @@
+CScanDirectory.hpp
+
+#pragma once
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
+#include <windows.h>
+#include <thread>
+#include <mutex>
+
+class CFileInfo {
+public:
+    std::string name;
+    std::string path;
+    bool isDirectory;
+
+    CFileInfo(const std::string& name, const std::string& path, bool isDir)
+        : name(name), path(path), isDirectory(isDir) {}
+};
+
+class CScanDirectory {
+public:
+    using CallbackType = std::function<void(const CFileInfo&)>;
+
+    CScanDirectory(const std::string& rootDir, CallbackType callback)
+        : rootDirectory(rootDir), callback(callback) {}
+
+    void Scan() {
+        std::thread scanThread(&CScanDirectory::ScanRecursive, this, rootDirectory);
+        scanThread.join(); // Wait for the thread to finish
+    }
+
+private:
+    std::string rootDirectory;
+    CallbackType callback;
+
+    void ScanRecursive(const std::string& directory) {
+        WIN32_FIND_DATA findFileData;
+        HANDLE hFind = INVALID_HANDLE_VALUE;
+
+        std::string dirPath = directory + "\\*";
+        hFind = FindFirstFile(dirPath.c_str(), &findFileData);
+
+        if (hFind == INVALID_HANDLE_VALUE) {
+            std::cerr << "Error accessing directory: " << directory << std::endl;
+            return;
+        }
+
+        do {
+            const std::string fileName = findFileData.cFileName;
+            if (fileName == "." || fileName == "..") continue;
+
+            const std::string fullPath = directory + "\\" + fileName;
+            bool isDir = (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+            // Call the callback with the file info
+            CFileInfo fileInfo(fileName, fullPath, isDir);
+            callback(fileInfo);
+
+            if (isDir) {
+                // If directory, recurse into it
+                ScanRecursive(fullPath);
+            }
+        } while (FindNextFile(hFind, &findFileData) != 0);
+
+        FindClose(hFind);
+    }
+};
+
+
+main.cpp
+#include <iostream>
+#include <string>
+#include <functional>
+#include "CScanDirectory.hpp"
+
+void PrintFileInfo(const CFileInfo& fileInfo) {
+    std::lock_guard<std::mutex> guard(printMutex); // Lock to avoid race conditions on printing
+    std::cout << (fileInfo.isDirectory ? "[DIR]  " : "[FILE] ") 
+              << fileInfo.name << " (" << fileInfo.path << ")" << std::endl;
+}
+
+std::mutex printMutex;
+
+int main() {
+    // Input directory
+    std::string dirPath = "C:\\path\\to\\your\\directory"; // Change this path to the directory you want to scan
+
+    // Create the scanner and pass the callback function
+    CScanDirectory scanner(dirPath, PrintFileInfo);
+
+    // Start the scanning
+    scanner.Scan();
+
+    return 0;
+}
+
+
+#pragma once
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
+#include <windows.h>
+#include <thread>
+#include <mutex>
+#include <fstream>
+
+class CFileInfo {
+public:
+    std::string name;
+    std::string path;
+    bool isDirectory;
+
+    CFileInfo(const std::string& name, const std::string& path, bool isDir)
+        : name(name), path(path), isDirectory(isDir) {}
+};
+
+class CScanDirectory {
+public:
+    using CallbackType = std::function<void(const CFileInfo&, int)>; // Callback now includes indentation level
+
+    CScanDirectory(const std::string& rootDir, CallbackType callback, const std::string& logFilePath)
+        : rootDirectory(rootDir), callback(callback), logFile(logFilePath, std::ios::app) {
+        if (!logFile.is_open()) {
+            std::cerr << "Error opening log file: " << logFilePath << std::endl;
+        }
+    }
+
+    void Scan() {
+        std::thread scanThread(&CScanDirectory::ScanRecursive, this, rootDirectory, 0); // Start scanning with level 0
+        scanThread.join(); // Wait for the thread to finish
+    }
+
+private:
+    std::string rootDirectory;
+    CallbackType callback;
+    std::ofstream logFile;
+    std::mutex logMutex;
+
+    void Log(const std::string& message) {
+        std::lock_guard<std::mutex> guard(logMutex);
+        // Log to file
+        logFile << message << std::endl;
+        // Also log to console
+        std::cout << message << std::endl;
+    }
+
+    void ScanRecursive(const std::string& directory, int level) {
+        WIN32_FIND_DATA findFileData;
+        HANDLE hFind = INVALID_HANDLE_VALUE;
+
+        std::string dirPath = directory + "\\*";
+        hFind = FindFirstFile(dirPath.c_str(), &findFileData);
+
+        if (hFind == INVALID_HANDLE_VALUE) {
+            std::cerr << "Error accessing directory: " << directory << std::endl;
+            return;
+        }
+
+        do {
+            const std::string fileName = findFileData.cFileName;
+            if (fileName == "." || fileName == "..") continue;
+
+            const std::string fullPath = directory + "\\" + fileName;
+            bool isDir = (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+            // Create message with indentation for current directory level
+            std::string indentation(level * 2, ' '); // 2 spaces per level
+            std::string message = indentation + (isDir ? "[DIR]  " : "[FILE] ") + fileName + " (" + fullPath + ")";
+
+            // Call the callback with the file info and level
+            callback(CFileInfo(fileName, fullPath, isDir), level);
+
+            // Log the message
+            Log(message);
+
+            if (isDir) {
+                // If directory, recurse into it with increased level
+                ScanRecursive(fullPath, level + 1);
+            }
+        } while (FindNextFile(hFind, &findFileData) != 0);
+
+        FindClose(hFind);
+    }
+};
+
+
+#include <iostream>
+#include <string>
+#include <functional>
+#include "CScanDirectory.hpp"
+
+void PrintFileInfo(const CFileInfo& fileInfo, int level) {
+    // Indentation is already handled in the ScanDirectory class, but this function could still be used
+    // to process the file information further if needed
+}
+
+int main() {
+    // Input directory
+    std::string dirPath = "C:\\path\\to\\your\\directory"; // Change this path to the directory you want to scan
+    std::string logFilePath = "scan_log.txt"; // Log file path
+
+    // Create the scanner and pass the callback function along with log file path
+    CScanDirectory scanner(dirPath, PrintFileInfo, logFilePath);
+
+    // Start the scanning
+    scanner.Scan();
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+#pragma once
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
+#include <windows.h>
+#include <thread>
+#include <mutex>
+#include <queue>
+#include <condition_variable>
+#include <atomic>
+
+class CFileInfo {
+public:
+    std::string name;
+    std::string path;
+    bool isDirectory;
+
+    CFileInfo(const std::string& name, const std::string& path, bool isDir)
+        : name(name), path(path), isDirectory(isDir) {}
+};
+
+class CScanDirectoryExt {
+public:
+    using CallbackType = std::function<void(const CFileInfo&, int)>; // Callback now includes indentation level
+
+    CScanDirectoryExt(const std::string& rootDir, CallbackType callback, const std::string& logFilePath)
+        : rootDirectory(rootDir), callback(callback), logFile(logFilePath, std::ios::app), stopScanning(false) {
+        if (!logFile.is_open()) {
+            std::cerr << "Error opening log file: " << logFilePath << std::endl;
+        }
+    }
+
+    void Scan() {
+        // Start thread to add directories to queue
+        std::thread producer(&CScanDirectoryExt::ProduceDirectories, this);
+        // Start thread to process directories from queue and scan their contents
+        std::thread consumer(&CScanDirectoryExt::ConsumeDirectories, this);
+
+        producer.join();
+        consumer.join();
+    }
+
+private:
+    std::string rootDirectory;
+    CallbackType callback;
+    std::ofstream logFile;
+    std::mutex logMutex;
+    std::mutex queueMutex;
+    std::condition_variable cv;
+    std::queue<std::string> directoryQueue;
+    std::atomic<bool> stopScanning;
+
+    void Log(const std::string& message) {
+        std::lock_guard<std::mutex> guard(logMutex);
+        // Log to file
+        logFile << message << std::endl;
+        // Also log to console
+        std::cout << message << std::endl;
+    }
+
+    void ProduceDirectories() {
+        // Push root directory into the queue
+        directoryQueue.push(rootDirectory);
+        stopScanning = false;
+
+        while (!stopScanning || !directoryQueue.empty()) {
+            std::string currentDir;
+
+            {
+                std::lock_guard<std::mutex> guard(queueMutex);
+                if (!directoryQueue.empty()) {
+                    currentDir = directoryQueue.front();
+                    directoryQueue.pop();
+                }
+            }
+
+            if (!currentDir.empty()) {
+                ScanDirectory(currentDir);  // Scan the current directory and add new directories to the queue
+            }
+        }
+    }
+
+    void ConsumeDirectories() {
+        while (!stopScanning || !directoryQueue.empty()) {
+            std::string currentDir;
+
+            {
+                std::unique_lock<std::mutex> lock(queueMutex);
+                cv.wait(lock, [this] { return !directoryQueue.empty() || stopScanning; });
+
+                if (!directoryQueue.empty()) {
+                    currentDir = directoryQueue.front();
+                    directoryQueue.pop();
+                }
+            }
+
+            if (!currentDir.empty()) {
+                ScanFilesAndSubdirs(currentDir);
+            }
+        }
+    }
+
+    void ScanDirectory(const std::string& directory) {
+        WIN32_FIND_DATA findFileData;
+        HANDLE hFind = INVALID_HANDLE_VALUE;
+
+        std::string dirPath = directory + "\\*";
+        hFind = FindFirstFile(dirPath.c_str(), &findFileData);
+
+        if (hFind == INVALID_HANDLE_VALUE) {
+            std::cerr << "Error accessing directory: " << directory << std::endl;
+            return;
+        }
+
+        do {
+            const std::string fileName = findFileData.cFileName;
+            if (fileName == "." || fileName == "..") continue;
+
+            const std::string fullPath = directory + "\\" + fileName;
+            bool isDir = (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+            // Log the directory and its contents
+            std::string message = (isDir ? "[DIR]  " : "[FILE] ") + fileName + " (" + fullPath + ")";
+            Log(message);
+
+            if (isDir) {
+                // If it's a directory, add it to the queue
+                std::lock_guard<std::mutex> guard(queueMutex);
+                directoryQueue.push(fullPath);
+                cv.notify_one();  // Notify the consumer thread to process the new directory
+            }
+
+        } while (FindNextFile(hFind, &findFileData) != 0);
+
+        FindClose(hFind);
+    }
+
+    void ScanFilesAndSubdirs(const std::string& directory) {
+        WIN32_FIND_DATA findFileData;
+        HANDLE hFind = INVALID_HANDLE_VALUE;
+
+        std::string dirPath = directory + "\\*";
+        hFind = FindFirstFile(dirPath.c_str(), &findFileData);
+
+        if (hFind == INVALID_HANDLE_VALUE) {
+            std::cerr << "Error accessing directory: " << directory << std::endl;
+            return;
+        }
+
+        do {
+            const std::string fileName = findFileData.cFileName;
+            if (fileName == "." || fileName == "..") continue;
+
+            const std::string fullPath = directory + "\\" + fileName;
+            bool isDir = (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+            // Call the callback with the file info and level
+            callback(CFileInfo(fileName, fullPath, isDir), 0); // Here we can adjust the indentation level if needed
+
+        } while (FindNextFile(hFind, &findFileData) != 0);
+
+        FindClose(hFind);
+    }
+};
+#include <iostream>
+#include <string>
+#include <functional>
+#include "CScanDirectoryExt.hpp"
+
+void PrintFileInfo(const CFileInfo& fileInfo, int level) {
+    std::string indentation(level * 2, ' '); // 2 spaces per level
+    std::cout << indentation << (fileInfo.isDirectory ? "[DIR]  " : "[FILE] ") 
+              << fileInfo.name << " (" << fileInfo.path << ")" << std::endl;
+}
+
+int main() {
+    // Input directory
+    std::string dirPath = "C:\\path\\to\\your\\directory"; // Change this path to the directory you want to scan
+    std::string logFilePath = "scan_log.txt"; // Log file path
+
+    // Create the scanner and pass the callback function along with log file path
+    CScanDirectoryExt scanner(dirPath, PrintFileInfo, logFilePath);
+
+    // Start the scanning
+    scanner.Scan();
+
+    return 0;
+}
+

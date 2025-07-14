@@ -43,6 +43,21 @@
     <ClCompile Include="..\Src\Tpm\TpmSlot\TpmSlotManager\TpmSlotManager.cpp">
       <Filter>Src\Tpm\TpmSlot\TpmSlotManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCrypto.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmCrypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHash.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmHash</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignature.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmSignature</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmRandom\TpmRandom.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmRandom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmDictionaryAttack\TpmDictionaryAttack.cpp">
+      <Filter>Src\Tpm\TpmDictionaryAttack</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Samples.h" />
@@ -83,6 +98,21 @@
     </ClInclude>
     <ClInclude Include="..\Src\Tpm\TpmSlot\TpmSlotManager\TpmSlotManager.h">
       <Filter>Src\Tpm\TpmSlot\TpmSlotManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCrypto.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmCrypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHash.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmHash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignature.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmSignature</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmRandom\TpmRandom.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmRandom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmDictionaryAttack\TpmDictionaryAttack.h">
+      <Filter>Src\Tpm\TpmDictionaryAttack</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +208,9 @@
     </Filter>
     <Filter Include="Src\Tpm\TpmCounters\TpmMonotonicCounter">
       <UniqueIdentifier>{68411411-0c12-4e4f-9cea-6cd8f16e87da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmDictionaryAttack">
+      <UniqueIdentifier>{624d789a-f704-434f-b8d6-4c788353ba95}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

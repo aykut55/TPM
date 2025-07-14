@@ -1,10 +1,10 @@
-﻿#include "TpmRandom.h"
+﻿#include "TpmDictionaryAttack.h"
 
 #include <string>       // std::string
 #include <iostream>     // std::cout
 #include <sstream>      // std::stringstream
 
-CTpmRandom::~CTpmRandom()
+CTpmDictionaryAttack::~CTpmDictionaryAttack()
 {
     try
     {
@@ -30,7 +30,7 @@ CTpmRandom::~CTpmRandom()
     }
 }
 
-CTpmRandom::CTpmRandom(CTpmSharedDevice* sharedDevice)
+CTpmDictionaryAttack::CTpmDictionaryAttack(CTpmSharedDevice* sharedDevice)
     : m_useSharedTpmDevice(sharedDevice != nullptr), m_sharedTpmDevice(sharedDevice)
 {
     try
@@ -39,14 +39,14 @@ CTpmRandom::CTpmRandom(CTpmSharedDevice* sharedDevice)
         {
             m_sharedTpmDevice = sharedDevice;
             std::stringstream ss;
-            ss << "[CTpmRandom] uses shared CTpmSharedDevice\n";
+            ss << "[CTpmWatchdogTimer] uses shared CTpmSharedDevice\n";
             Log(ss.str());
         }
         else
         {
             m_sharedTpmDevice = new CTpmSharedDevice();
             std::stringstream ss;
-            ss << "[CTpmRandom] uses local  CTpmSharedDevice\n";
+            ss << "[CTpmWatchdogTimer] uses local  CTpmSharedDevice\n";
             Log(ss.str());
         }
 
@@ -61,12 +61,12 @@ CTpmRandom::CTpmRandom(CTpmSharedDevice* sharedDevice)
     }
 }
 
-CTpmSharedDevice* CTpmRandom::GetTpmSharedDevice(void)
+CTpmSharedDevice* CTpmDictionaryAttack::GetTpmSharedDevice(void)
 {
     return m_sharedTpmDevice;
 }
 
-bool CTpmRandom::Release(void)
+bool CTpmDictionaryAttack::Release(void)
 {
     bool fncReturn = false;
 
@@ -102,12 +102,24 @@ bool CTpmRandom::Release(void)
     return fncReturn;
 }
 
-bool CTpmRandom::Initialize(void)
+bool CTpmDictionaryAttack::Initialize(void)
 {
     bool fncReturn = false;
 
     try
     {
+        Announce("Dictionary Attack");
+
+        // The TPM maintains global dictionary attack remediation logic. A special
+        // authValue is needed to control it. This is LockoutAuth.
+
+        // Reset the lockout
+        tpm->DictionaryAttackLockReset(TPM_RH::LOCKOUT);
+
+        // And set the TPM to be fairly forgiving for running the tests
+        UINT32 newMaxTries = 1000, newRecoverTime = 1, lockoutAuthFailRecoveryTime = 1;
+        tpm->DictionaryAttackParameters(TPM_RH::LOCKOUT, newMaxTries, newRecoverTime, lockoutAuthFailRecoveryTime);
+
         fncReturn = true;
     }
     catch (const std::exception& ex)
@@ -128,12 +140,3 @@ bool CTpmRandom::Initialize(void)
     return fncReturn;
 }
 
-ByteVec CTpmRandom::GetRandom(UINT16 bytesRequested)
-{
-    return tpm->GetRandom(bytesRequested);
-}
-
-void CTpmRandom::StirRandom(const ByteVec& inData)
-{
-    tpm->StirRandom(inData);
-}

@@ -481,5 +481,21 @@ void CTpmSharedDevice::TPMLockoutReset(void)
     }
 }
 
+// The TPM maintains global dictionary attack remediation logic. A special
+// authValue is needed to control it. This is LockoutAuth.
+// Reset the lockout
+// And set the TPM to be fairly forgiving for running the tests 
+void CTpmSharedDevice::DictionaryAttackLockReset(void)
+{
+    // The TPM maintains global dictionary attack remediation logic. A special
+    // authValue is needed to control it. This is LockoutAuth.
+
+    // Reset the lockout
+    tpm->DictionaryAttackLockReset(TPM_RH::LOCKOUT);
+
+    // And set the TPM to be fairly forgiving for running the tests
+    UINT32 newMaxTries = 1000, newRecoverTime = 1, lockoutAuthFailRecoveryTime = 1;
+    tpm->DictionaryAttackParameters(TPM_RH::LOCKOUT, newMaxTries, newRecoverTime, lockoutAuthFailRecoveryTime);
+}
 
 

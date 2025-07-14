@@ -38,11 +38,10 @@ public:
     std::vector<BYTE>                    SignSlotData(UINT32 slotNo);    
     void                                 FlushAesKey();
 
-    bool BackupSlot(UINT32 slotNo, const std::string& pin, const std::string& backupFile);
-    bool RestoreSlot(UINT32 slotNo, const std::string& pin, const std::string& backupFile);
-
-    bool BackupAllSlots(const std::string& backupFolder);
-    bool RestoreAllSlots(const std::string& backupFolder);
+    bool                                 BackupSlot(UINT32 slotNo, const std::string& pin, const std::string& backupFile);
+    bool                                 RestoreSlot(UINT32 slotNo, const std::string& pin, const std::string& backupFile);
+    bool                                 BackupAllSlots(const std::string& backupFolder);
+    bool                                 RestoreAllSlots(const std::string& backupFolder);
 
 protected:
 

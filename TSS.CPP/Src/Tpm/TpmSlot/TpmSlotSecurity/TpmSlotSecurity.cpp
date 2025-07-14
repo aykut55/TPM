@@ -386,6 +386,102 @@ std::pair<UINT32, std::vector<BYTE>> CTpmSlotSecurity::ReadVersionedSlot(UINT32 
     }
 }
 
+bool CTpmSlotSecurity::LoadAesKey()
+{
+    try
+    {
+        TPMT_PUBLIC aesTemplate(
+            TPM_ALG_ID::SHA256,
+            TPMA_OBJECT::decrypt | TPMA_OBJECT::sign | TPMA_OBJECT::userWithAuth
+            | TPMA_OBJECT::sensitiveDataOrigin,
+            {},
+            TPMS_SYMCIPHER_PARMS(
+                TPMT_SYM_DEF_OBJECT(TPM_ALG_ID::AES, 128, TPM_ALG_ID::CFB)
+            ),
+            TPM2B_DIGEST_SYMCIPHER()
+        );
+
+        // parent key
+        TPM_HANDLE parentHandle = TPM_RH::OWNER;
+
+        auto aesKey = tpm->Create(
+            parentHandle,
+            TPMS_SENSITIVE_CREATE(),
+            aesTemplate,
+            {},
+            {}
+        );
+
+        m_aesKeyHandle = tpm->Load(
+            parentHandle,
+            aesKey.outPrivate,
+            aesKey.outPublic
+        );
+
+        std::cout << "[CTpmSlotSecurity] AES key loaded." << std::endl;
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        std::cerr << "[CTpmSlotSecurity] LoadAesKey error: " << ex.what() << std::endl;
+        return false;
+    }
+}
+
+std::vector<BYTE> CTpmSlotSecurity::EncryptData(const std::vector<BYTE>& plaintext)
+{
+    TPM2B_IV iv;
+    iv.buffer = std::vector<BYTE>(16, 0);
+
+    auto result = tpm->EncryptDecrypt(
+        m_aesKeyHandle,
+        0, // encrypt
+        TPM_ALG_ID::CFB,
+        iv.buffer,
+        plaintext
+    );
+
+    return result.outData;
+}
+
+std::vector<BYTE> CTpmSlotSecurity::DecryptData(const std::vector<BYTE>& ciphertext)
+{
+    TPM2B_IV iv;
+    iv.buffer = std::vector<BYTE>(16, 0);
+
+    auto result = tpm->EncryptDecrypt(
+        m_aesKeyHandle,
+        1, // decrypt
+        TPM_ALG_ID::CFB,
+        iv.buffer,
+        ciphertext
+    );
+
+    return result.outData;
+}
+
+void CTpmSlotSecurity::FlushAesKey()
+{
+    if (m_aesKeyHandle != TPM_RH_NULL)
+    {
+        tpm->FlushContext(m_aesKeyHandle);
+        m_aesKeyHandle = TPM_RH_NULL;
+        std::cout << "[CTpmSlotSecurity] AES key flushed." << std::endl;
+    }
+}
+
+std::vector<BYTE> CTpmSlotSecurity::ComputeSlotHash(UINT32 slotNo)
+{
+    // ileri adım olarak implemente edeceğiz
+    return {};
+}
+
+std::vector<BYTE> CTpmSlotSecurity::SignSlotData(UINT32 slotNo)
+{
+    // ileri adım olarak implemente edeceğiz
+    return {};
+}
+
 bool CTpmSlotSecurity::BackupSlot(UINT32 slotNo, const std::string& pin, const std::string& backupFile)
 {
     try

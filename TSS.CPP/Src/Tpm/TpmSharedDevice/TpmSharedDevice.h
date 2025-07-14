@@ -21,6 +21,7 @@ public:
     void    SetRecoverCallback(std::function<void(const std::string&, int attemptCount)> cb);
     void    RecoverTpm(int attemptCount);
     void    TPMLockoutReset(void);
+    void    DictionaryAttackLockReset(void);
 
 protected:
 
