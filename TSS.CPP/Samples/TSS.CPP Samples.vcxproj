@@ -187,6 +187,7 @@
     <ClInclude Include="..\Src\Tpm\TpmDictionaryAttack\TpmDictionaryAttack.h" />
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCrypto.h" />
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHash.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHashTest.h" />
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmRandom\TpmRandom.h" />
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignature.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.h" />
@@ -220,6 +221,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHash.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHashTest.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmRandom\TpmRandom.cpp">

@@ -58,6 +58,9 @@
     <ClCompile Include="..\Src\Tpm\TpmDictionaryAttack\TpmDictionaryAttack.cpp">
       <Filter>Src\Tpm\TpmDictionaryAttack</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHashTest.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmHash</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Samples.h" />
@@ -113,6 +116,9 @@
     </ClInclude>
     <ClInclude Include="..\Src\Tpm\TpmDictionaryAttack\TpmDictionaryAttack.h">
       <Filter>Src\Tpm\TpmDictionaryAttack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHashTest.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmHash</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

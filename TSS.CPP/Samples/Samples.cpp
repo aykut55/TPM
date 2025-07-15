@@ -3399,7 +3399,8 @@ void clearStringstream(std::stringstream& ss)
 #include "TpmSlotSecurity.h"
 #include "TpmRandom.h"
 #include "TpmCrypto.h"
-//#include "TpmHash.h"
+#include "TpmHash.h"
+#include "TpmHashTest.h"
 //#include "TpmSignature.h"
 
 #define TpmDictionaryAttack_Example             0
@@ -3412,9 +3413,10 @@ void clearStringstream(std::stringstream& ss)
 #define TpmSlotSecurity_Example2                0
 #define TpmSlotSecurity_Example3                0
 #define TpmRandom_Example                       1
-#define TpmCrypto_Example                       1
+#define TpmCrypto_Example                       0
 #define TpmHash_Example                         0
 #define TpmSignature_Example                    0
+#define TpmHash_Example                         1
 
 void Samples::RunAllSamplesAT()
 {
@@ -4665,7 +4667,7 @@ void Samples::RunAllSamplesAT()
         std::cout << "more random bytes: " << rand << std::endl;
     }
 #endif
-
+    
 #if TpmCrypto_Example
     CTpmCrypto* pTpmCrypto = new CTpmCrypto(pTpmSharedDevice);
     {
@@ -5447,6 +5449,34 @@ void Samples::RunAllSamplesAT()
         }
 
     }
+#endif
+
+    
+#if TpmHash_Example
+    CTpmHash* pTpmHash = new CTpmHash(pTpmSharedDevice);
+    {
+        pTpmHash->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmHash->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM Clock Reader." << std::endl;
+            return;
+        }
+
+        CTpmHashTest tester;
+        tester.SetTpmHash(pTpmHash);
+        tester.RunAllTests();
+    }
+#endif
+
+#if TpmHash_Example
+    delete pTpmHash;
 #endif
 
 #if TpmCrypto_Example

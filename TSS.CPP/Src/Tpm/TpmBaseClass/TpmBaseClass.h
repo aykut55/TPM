@@ -11,6 +11,7 @@
 #include "Tpm2.h"
 #include "TpmDevice.h"
 #include "myTpmConfig.h"
+#include "Tss.h"
 
 using namespace TpmCpp;
 
