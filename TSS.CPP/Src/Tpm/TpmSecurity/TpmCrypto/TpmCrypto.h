@@ -194,6 +194,31 @@ public:
 
     // ***********************************************************************************************************************
 
+    bool            IsTooLargeForTpm(const std::vector<BYTE>& data);
+    bool            IsTooLargeForTpm(const std::streamsize dataSize);
+    bool            IsTooLargeForTpm(const uint64_t dataSize);
+    std::streamsize GetFileSize(const std::string& filePath);
+    uint64_t        GetFileSize2(const std::string& filePath);
+    // ***********************************************************************************************************************
+
+    bool            CompareFiles(const std::string& file1, const std::string& file2);
+    void            BuildTestFile(const std::string& inputFile, const int inputFileSizeByte = 50000);// ~50 KB örnek veri
+
+    // ***********************************************************************************************************************
+
+    bool GenerateAndLoadAesKeyWithPassword(const std::string& password);
+    bool GenerateAndLoadAesKeyWithPassword(const std::string& password, bool usePersistentKey);
+    bool UnloadAndClearAesKeyWithPassword();
+    bool RemovePersistentAesKey(UINT32 persistentHandleValue = 0x81000001);
+    bool IsAesKeyHandleLoaded() const;
+    bool ClearAllAesKeys();
+
+    // ***********************************************************************************************************************
+
+    std::vector<BYTE> ComputePasswordHash(const std::string& password);
+    bool StorePasswordHashToNv(const std::vector<BYTE>& hash);
+    bool ReadPasswordHashFromNv(std::vector<BYTE>& hashOut);
+    bool IsPasswordValidForCurrentAesKey(const std::string& password);
 
     // ***********************************************************************************************************************
 
@@ -210,11 +235,13 @@ public:
     // ***********************************************************************************************************************
 
 
+    // ***********************************************************************************************************************
 
 
+    // ***********************************************************************************************************************
 
 
-
+    // ***********************************************************************************************************************
 
 
 
@@ -222,27 +249,6 @@ public:
     bool    GenerateAndLoadAesKey();
     bool    UnloadAndClearAesKey();
     bool    ResetAesKey();
-
-
-
-
-
-
-
-
-
-
-
-
-
-    bool            IsTooLargeForTpm(const std::vector<BYTE>& data);
-    bool            IsTooLargeForTpm(const std::streamsize dataSize);
-    bool            IsTooLargeForTpm(const uint64_t dataSize);
-    std::streamsize GetFileSize(const std::string& filePath);
-    uint64_t        GetFileSize2(const std::string& filePath);
-
-    bool CompareFiles(const std::string& file1, const std::string& file2);
-    void BuildTestFile(const std::string& inputFile, const int inputFileSizeByte = 50000);// ~50 KB örnek veri
 
     TPM_HANDLE              MakeStoragePrimary(AUTH_SESSION* sess);
     void                    EncryptDecryptSample();
@@ -253,17 +259,9 @@ public:
 
 
 
-    bool GenerateAndLoadAesKeyWithPassword(const std::string& password);
-    bool GenerateAndLoadAesKeyWithPassword(const std::string& password, bool usePersistentKey);
-    bool UnloadAndClearAesKeyWithPassword();
-    bool RemovePersistentAesKey(UINT32 persistentHandleValue = 0x81000001);
-    bool IsAesKeyHandleLoaded() const;
-    bool ClearAllAesKeys();
 
-    std::vector<BYTE> ComputePasswordHash(const std::string& password);
-    bool StorePasswordHashToNv(const std::vector<BYTE>& hash);
-    bool ReadPasswordHashFromNv(std::vector<BYTE>& hashOut);
-    bool IsPasswordValidForCurrentAesKey(const std::string& password);
+
+
 
 
     TPM_HANDLE LoadAesKey(); // Internal helper

@@ -365,11 +365,58 @@ bool CTpmCrypto::DecryptDataWithPasswordChunked(const std::string& password, con
 
 bool CTpmCrypto::EncryptDataWithPassword(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
 {
+    bool checkPasswordValidty = false;
+    bool generateAndLoadAesKeyWithPasswordAsNeeded = false;
+
+    if (checkPasswordValidty)
+    {
+        if (!IsPasswordValidForCurrentAesKey(password))
+        {
+            if (generateAndLoadAesKeyWithPasswordAsNeeded)
+            {
+                if (!GenerateAndLoadAesKeyWithPassword(password))
+                {
+                    m_lastError = "EncryptDataWithPassword: GenerateAndLoadAesKeyWithPassword() is failed for current password.";
+                    return false;
+                }
+            }
+            else
+            {
+                m_lastError = "EncryptDataWithPassword: Password is invalid for current AES key.";
+                return false;
+            }
+        }
+    }
+
     return EncryptDecryptInternalWithPassword(password, plain, encrypted, true);
 }
 
 bool CTpmCrypto::DecryptDataWithPassword(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
 {
+    bool checkPasswordValidty = false;
+    bool generateAndLoadAesKeyWithPasswordAsNeeded = false;
+
+    if (checkPasswordValidty)
+    {
+        if (!IsPasswordValidForCurrentAesKey(password))
+        {
+            if (generateAndLoadAesKeyWithPasswordAsNeeded)
+            {
+                if (!GenerateAndLoadAesKeyWithPassword(password))
+                {
+                    m_lastError = "DecryptDataWithPassword: GenerateAndLoadAesKeyWithPassword() is failed for current password.";
+                    return false;
+                }
+            }
+            else
+            {
+                m_lastError = "DecryptDataWithPassword: Password is invalid for current AES key.";
+                return false;
+            }
+
+        }
+    }
+
     return EncryptDecryptInternalWithPassword(password, encrypted, plain, false);
 }
 
