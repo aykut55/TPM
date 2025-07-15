@@ -810,17 +810,17 @@ void CTpmCrypto::EncryptDecryptSample()
     tpm->FlushContext(aesHandle);
 }
 
-bool CTpmCrypto::EncryptDataWithPassword(const std::vector<BYTE>& plain, const std::string& password, std::vector<BYTE>& encrypted)
+bool CTpmCrypto::EncryptDataWithPassword(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
 {
-    return EncryptDecryptInternalWithPassword(plain, password, encrypted, true);
+    return EncryptDecryptInternalWithPassword(password, plain, encrypted, true);
 }
 
-bool CTpmCrypto::DecryptDataWithPassword(const std::vector<BYTE>& encrypted, const std::string& password, std::vector<BYTE>& plain)
+bool CTpmCrypto::DecryptDataWithPassword(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
 {
-    return EncryptDecryptInternalWithPassword(encrypted, password, plain, false);
+    return EncryptDecryptInternalWithPassword(password, encrypted, plain, false);
 }
 
-bool CTpmCrypto::EncryptDecryptInternalWithPassword(const std::vector<BYTE>& inData, const std::string& password, std::vector<BYTE>& outData, bool encrypt)
+bool CTpmCrypto::EncryptDecryptInternalWithPassword(const std::string& password, const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt)
 {
     try
     {
@@ -860,44 +860,44 @@ bool CTpmCrypto::EncryptDecryptInternalWithPassword(const std::vector<BYTE>& inD
 
 bool CTpmCrypto::EncryptByteWithPassword(BYTE value, const std::string& password, std::vector<BYTE>& encryptedOut)
 {
-    return EncryptDataWithPassword(std::vector<BYTE>{ value }, password, encryptedOut);
+    return EncryptDataWithPassword(password, std::vector<BYTE>{ value }, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptCharWithPassword(char value, const std::string& password, std::vector<BYTE>& encryptedOut)
 {
-    return EncryptDataWithPassword(std::vector<BYTE>{ static_cast<BYTE>(value) }, password, encryptedOut);
+    return EncryptDataWithPassword(password, std::vector<BYTE>{ static_cast<BYTE>(value) }, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptIntWithPassword(int value, const std::string& password, std::vector<BYTE>& encryptedOut)
 {
     std::vector<BYTE> bytes(sizeof(int));
     std::memcpy(bytes.data(), &value, sizeof(int));
-    return EncryptDataWithPassword(bytes, password, encryptedOut);
+    return EncryptDataWithPassword(password, bytes, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptFloatWithPassword(float value, const std::string& password, std::vector<BYTE>& encryptedOut)
 {
     std::vector<BYTE> bytes(sizeof(float));
     std::memcpy(bytes.data(), &value, sizeof(float));
-    return EncryptDataWithPassword(bytes, password, encryptedOut);
+    return EncryptDataWithPassword(password, bytes, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptDoubleWithPassword(double value, const std::string& password, std::vector<BYTE>& encryptedOut)
 {
     std::vector<BYTE> bytes(sizeof(double));
     std::memcpy(bytes.data(), &value, sizeof(double));
-    return EncryptDataWithPassword(bytes, password, encryptedOut);
+    return EncryptDataWithPassword(password, bytes, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptStringWithPassword(const std::string& str, const std::string& password, std::vector<BYTE>& encryptedOut)
 {
-    return EncryptDataWithPassword(std::vector<BYTE>(str.begin(), str.end()), password, encryptedOut);
+    return EncryptDataWithPassword(password, std::vector<BYTE>(str.begin(), str.end()), encryptedOut);
 }
 
 bool CTpmCrypto::DecryptByteWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, BYTE& valueOut)
 {
     std::vector<BYTE> plain;
-    if (!DecryptDataWithPassword(encryptedData, password, plain) || plain.size() < 1)
+    if (!DecryptDataWithPassword(password, encryptedData, plain) || plain.size() < 1)
         return false;
     valueOut = plain[0];
     return true;
@@ -906,7 +906,7 @@ bool CTpmCrypto::DecryptByteWithPassword(const std::vector<BYTE>& encryptedData,
 bool CTpmCrypto::DecryptCharWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, char& valueOut)
 {
     std::vector<BYTE> plain;
-    if (!DecryptDataWithPassword(encryptedData, password, plain) || plain.size() < 1)
+    if (!DecryptDataWithPassword(password, encryptedData, plain) || plain.size() < 1)
         return false;
     valueOut = static_cast<char>(plain[0]);
     return true;
@@ -915,7 +915,7 @@ bool CTpmCrypto::DecryptCharWithPassword(const std::vector<BYTE>& encryptedData,
 bool CTpmCrypto::DecryptIntWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, int& valueOut)
 {
     std::vector<BYTE> plain;
-    if (!DecryptDataWithPassword(encryptedData, password, plain) || plain.size() != sizeof(int))
+    if (!DecryptDataWithPassword(password, encryptedData, plain) || plain.size() != sizeof(int))
         return false;
     std::memcpy(&valueOut, plain.data(), sizeof(int));
     return true;
@@ -924,7 +924,7 @@ bool CTpmCrypto::DecryptIntWithPassword(const std::vector<BYTE>& encryptedData, 
 bool CTpmCrypto::DecryptFloatWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, float& valueOut)
 {
     std::vector<BYTE> plain;
-    if (!DecryptDataWithPassword(encryptedData, password, plain) || plain.size() != sizeof(float))
+    if (!DecryptDataWithPassword(password, encryptedData, plain) || plain.size() != sizeof(float))
         return false;
     std::memcpy(&valueOut, plain.data(), sizeof(float));
     return true;
@@ -933,7 +933,7 @@ bool CTpmCrypto::DecryptFloatWithPassword(const std::vector<BYTE>& encryptedData
 bool CTpmCrypto::DecryptDoubleWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, double& valueOut)
 {
     std::vector<BYTE> plain;
-    if (!DecryptDataWithPassword(encryptedData, password, plain) || plain.size() != sizeof(double))
+    if (!DecryptDataWithPassword(password, encryptedData, plain) || plain.size() != sizeof(double))
         return false;
     std::memcpy(&valueOut, plain.data(), sizeof(double));
     return true;
@@ -942,7 +942,7 @@ bool CTpmCrypto::DecryptDoubleWithPassword(const std::vector<BYTE>& encryptedDat
 bool CTpmCrypto::DecryptStringWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, std::string& strOut)
 {
     std::vector<BYTE> plain;
-    if (!DecryptDataWithPassword(encryptedData, password, plain))
+    if (!DecryptDataWithPassword(password, encryptedData, plain))
         return false;
     strOut = std::string(plain.begin(), plain.end());
     return true;
@@ -952,7 +952,7 @@ bool CTpmCrypto::EncryptByteArrayWithPassword(const std::vector<BYTE>& values, c
 {
     try
     {
-        return EncryptDataWithPassword(values, password, encryptedOut);
+        return EncryptDataWithPassword(password, values, encryptedOut);
     }
     catch (const std::exception& ex)
     {
@@ -965,7 +965,7 @@ bool CTpmCrypto::EncryptByteArrayWithPassword(const std::vector<BYTE>& values, c
 bool CTpmCrypto::EncryptCharArrayWithPassword(const std::vector<char>& values, const std::string& password, std::vector<BYTE>& encryptedOut)
 {
     std::vector<BYTE> input(values.begin(), values.end());
-    return EncryptDataWithPassword(input, password, encryptedOut);
+    return EncryptDataWithPassword(password, input, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptIntArrayWithPassword(const std::vector<int>& values, const std::string& password, std::vector<BYTE>& encryptedOut)
@@ -976,7 +976,7 @@ bool CTpmCrypto::EncryptIntArrayWithPassword(const std::vector<int>& values, con
         BYTE* p = reinterpret_cast<BYTE*>(&val);
         input.insert(input.end(), p, p + sizeof(int));
     }
-    return EncryptDataWithPassword(input, password, encryptedOut);
+    return EncryptDataWithPassword(password, input, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptFloatArrayWithPassword(const std::vector<float>& values, const std::string& password, std::vector<BYTE>& encryptedOut)
@@ -987,7 +987,7 @@ bool CTpmCrypto::EncryptFloatArrayWithPassword(const std::vector<float>& values,
         BYTE* p = reinterpret_cast<BYTE*>(&val);
         input.insert(input.end(), p, p + sizeof(float));
     }
-    return EncryptDataWithPassword(input, password, encryptedOut);
+    return EncryptDataWithPassword(password, input, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptDoubleArrayWithPassword(const std::vector<double>& values, const std::string& password, std::vector<BYTE>& encryptedOut)
@@ -998,7 +998,7 @@ bool CTpmCrypto::EncryptDoubleArrayWithPassword(const std::vector<double>& value
         BYTE* p = reinterpret_cast<BYTE*>(&val);
         input.insert(input.end(), p, p + sizeof(double));
     }
-    return EncryptDataWithPassword(input, password, encryptedOut);
+    return EncryptDataWithPassword(password, input, encryptedOut);
 }
 
 bool CTpmCrypto::EncryptStringArrayWithPassword(const std::vector<std::string>& values, const std::string& password, std::vector<BYTE>& encryptedOut)
@@ -1009,14 +1009,14 @@ bool CTpmCrypto::EncryptStringArrayWithPassword(const std::vector<std::string>& 
         input.insert(input.end(), str.begin(), str.end());
         input.push_back('\0'); // null-terminate each string
     }
-    return EncryptDataWithPassword(input, password, encryptedOut);
+    return EncryptDataWithPassword(password, input, encryptedOut);
 }
 
 bool CTpmCrypto::DecryptByteArrayWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, std::vector<BYTE>& valuesOut)
 {
     try
     {
-        return DecryptDataWithPassword(encryptedData, password, valuesOut);
+        return DecryptDataWithPassword(password, encryptedData, valuesOut);
     }
     catch (const std::exception& ex)
     {
@@ -1028,7 +1028,7 @@ bool CTpmCrypto::DecryptByteArrayWithPassword(const std::vector<BYTE>& encrypted
 bool CTpmCrypto::DecryptCharArrayWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, std::vector<char>& valuesOut)
 {
     std::vector<BYTE> decrypted;
-    if (!DecryptDataWithPassword(encryptedData, password, decrypted))
+    if (!DecryptDataWithPassword(password, encryptedData, decrypted))
         return false;
 
     valuesOut.assign(decrypted.begin(), decrypted.end());
@@ -1038,7 +1038,7 @@ bool CTpmCrypto::DecryptCharArrayWithPassword(const std::vector<BYTE>& encrypted
 bool CTpmCrypto::DecryptIntArrayWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, std::vector<int>& valuesOut)
 {
     std::vector<BYTE> decrypted;
-    if (!DecryptDataWithPassword(encryptedData, password, decrypted))
+    if (!DecryptDataWithPassword(password, encryptedData, decrypted))
         return false;
 
     if (decrypted.size() % sizeof(int) != 0)
@@ -1053,7 +1053,7 @@ bool CTpmCrypto::DecryptIntArrayWithPassword(const std::vector<BYTE>& encryptedD
 bool CTpmCrypto::DecryptFloatArrayWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, std::vector<float>& valuesOut)
 {
     std::vector<BYTE> decrypted;
-    if (!DecryptDataWithPassword(encryptedData, password, decrypted))
+    if (!DecryptDataWithPassword(password, encryptedData, decrypted))
         return false;
 
     if (decrypted.size() % sizeof(float) != 0)
@@ -1068,7 +1068,7 @@ bool CTpmCrypto::DecryptFloatArrayWithPassword(const std::vector<BYTE>& encrypte
 bool CTpmCrypto::DecryptDoubleArrayWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, std::vector<double>& valuesOut)
 {
     std::vector<BYTE> decrypted;
-    if (!DecryptDataWithPassword(encryptedData, password, decrypted))
+    if (!DecryptDataWithPassword(password, encryptedData, decrypted))
         return false;
 
     if (decrypted.size() % sizeof(double) != 0)
@@ -1083,7 +1083,7 @@ bool CTpmCrypto::DecryptDoubleArrayWithPassword(const std::vector<BYTE>& encrypt
 bool CTpmCrypto::DecryptStringArrayWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, std::vector<std::string>& valuesOut)
 {
     std::vector<BYTE> decrypted;
-    if (!DecryptDataWithPassword(encryptedData, password, decrypted))
+    if (!DecryptDataWithPassword(password, encryptedData, decrypted))
         return false;
 
     valuesOut.clear();
@@ -1122,7 +1122,7 @@ bool CTpmCrypto::EncryptFileWithPassword(const std::string& inputFile, const std
         in.close();
 
         std::vector<BYTE> encrypted;
-        if (!EncryptDataWithPassword(plain, password, encrypted))
+        if (!EncryptDataWithPassword(password, plain, encrypted))
         {
             std::cerr << "[EncryptFileWithPassword] Encryption failed." << std::endl;
             return false;
@@ -1162,7 +1162,7 @@ bool CTpmCrypto::DecryptFileWithPassword(const std::string& inputFile, const std
         in.close();
 
         std::vector<BYTE> decrypted;
-        if (!DecryptDataWithPassword(encrypted, password, decrypted))
+        if (!DecryptDataWithPassword(password, encrypted, decrypted))
         {
             std::cerr << "[DecryptFileWithPassword] Decryption failed." << std::endl;
             return false;
@@ -1327,7 +1327,7 @@ bool CTpmCrypto::EncryptFileWithPasswordChunked(const std::string& inputFile, co
         std::vector<BYTE> chunk(buffer.begin(), buffer.begin() + bytesRead);
         std::vector<BYTE> encryptedChunk;
 
-        if (!EncryptDataWithPassword(chunk, password, encryptedChunk))
+        if (!EncryptDataWithPassword(password, chunk, encryptedChunk))
         {
             m_lastError = "EncryptFileWithPasswordChunked: encryption failed on chunk";
             return false;
@@ -1372,7 +1372,7 @@ bool CTpmCrypto::DecryptFileWithPasswordChunked(const std::string& inputFile, co
         }
 
         std::vector<BYTE> decryptedChunk;
-        if (!DecryptDataWithPassword(encryptedChunk, password, decryptedChunk))
+        if (!DecryptDataWithPassword(password, encryptedChunk, decryptedChunk))
         {
             m_lastError = "DecryptFileWithPasswordChunked: decryption failed on chunk";
             return false;
@@ -1384,7 +1384,7 @@ bool CTpmCrypto::DecryptFileWithPasswordChunked(const std::string& inputFile, co
     return true;
 }
 
-bool CTpmCrypto::EncryptDataWithPasswordChunked(const std::vector<BYTE>& plain, const std::string& password, std::vector<BYTE>& encrypted)
+bool CTpmCrypto::EncryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
 {
     try
     {
@@ -1398,7 +1398,7 @@ bool CTpmCrypto::EncryptDataWithPasswordChunked(const std::vector<BYTE>& plain, 
             std::vector<BYTE> chunk(plain.begin() + offset, plain.begin() + offset + currentChunkSize);
             std::vector<BYTE> encryptedChunk;
 
-            if (!EncryptDataWithPassword(chunk, password, encryptedChunk))
+            if (!EncryptDataWithPassword(password, chunk, encryptedChunk))
             {
                 m_lastError = "EncryptDataWithPasswordChunked: encryption failed on chunk";
                 return false;
@@ -1420,7 +1420,7 @@ bool CTpmCrypto::EncryptDataWithPasswordChunked(const std::vector<BYTE>& plain, 
     }
 }
 
-bool CTpmCrypto::DecryptDataWithPasswordChunked(const std::vector<BYTE>& encrypted, const std::string& password, std::vector<BYTE>& plain)
+bool CTpmCrypto::DecryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
 {
     try
     {
@@ -1442,7 +1442,7 @@ bool CTpmCrypto::DecryptDataWithPasswordChunked(const std::vector<BYTE>& encrypt
             std::vector<BYTE> encryptedChunk(encrypted.begin() + offset, encrypted.begin() + offset + chunkSize);
             std::vector<BYTE> decryptedChunk;
 
-            if (!DecryptDataWithPassword(encryptedChunk, password, decryptedChunk))
+            if (!DecryptDataWithPassword(password, encryptedChunk, decryptedChunk))
             {
                 m_lastError = "DecryptDataWithPasswordChunked: decryption failed on chunk";
                 return false;
@@ -1665,7 +1665,11 @@ bool CTpmCrypto::RemovePersistentAesKey(UINT32 persistentHandleValue)
 
 bool CTpmCrypto::IsAesKeyHandleLoaded() const
 {
+    // hangisi kullanilacak, gpt'ye sor!!!
+
     return m_aesKeyHandle.handle != 0;
+
+    return m_aesKeyHandle.handle != 0 && m_aesKeyHandle.handle != TPM_RH_NULL;
 }
 
 bool CTpmCrypto::ClearAllAesKeys()

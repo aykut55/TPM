@@ -123,23 +123,28 @@ public:
     void                    EncryptDecryptSample();
 
 protected:
+
 public:
-    bool EncryptDecryptInternal(const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt);
-    bool EncryptData(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
-    bool DecryptData(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
-
-    // Encrypt/Decrypt with Password (PIN-protected AES key)
-    bool EncryptDataWithPassword(const std::vector<BYTE>& plain, const std::string& password, std::vector<BYTE>& encrypted);
-    bool DecryptDataWithPassword(const std::vector<BYTE>& encrypted, const std::string& password, std::vector<BYTE>& plain);
-    bool EncryptDecryptInternalWithPassword(const std::vector<BYTE>& inData, const std::string& password, std::vector<BYTE>& outData, bool encrypt);
-
-
     // Chunked encrypt/decrypt
     bool EncryptDataChunked(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
     bool DecryptDataChunked(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
+    // encrypt/decrypt
+    bool EncryptData(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
+    bool DecryptData(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
+    // encrypt/decrypt internal
+    bool EncryptDecryptInternal(const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt);
 
-    bool EncryptDataWithPasswordChunked(const std::vector<BYTE>& plain, const std::string& password, std::vector<BYTE>& encrypted);
-    bool DecryptDataWithPasswordChunked(const std::vector<BYTE>& encrypted, const std::string& password, std::vector<BYTE>& plain);
+    // Encrypt/Decrypt with Password (PIN-protected AES key)
+    // Chunked encrypt/decrypt with password
+    bool EncryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
+    bool DecryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
+    // encrypt/decrypt with password    
+    bool EncryptDataWithPassword(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
+    bool DecryptDataWithPassword(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
+    // encrypt/decrypt internal with password        
+    bool EncryptDecryptInternalWithPassword(const std::string& password, const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt);
+
+
 
     bool GenerateAndLoadAesKeyWithPassword(const std::string& password);
     bool GenerateAndLoadAesKeyWithPassword(const std::string& password, bool usePersistentKey);

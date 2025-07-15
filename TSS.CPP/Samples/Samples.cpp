@@ -5358,7 +5358,7 @@ void Samples::RunAllSamplesAT()
 
             // Encrypt
             std::vector<BYTE> encryptedData;
-            if (!pTpmCrypto->EncryptDataWithPassword(plainData, password, encryptedData)) {
+            if (!pTpmCrypto->EncryptDataWithPassword(password, plainData, encryptedData)) {
                 std::cerr << "Encryption failed.\n";
                 return;
             }
@@ -5367,7 +5367,7 @@ void Samples::RunAllSamplesAT()
 
             // Decrypt
             std::vector<BYTE> decryptedData;
-            if (!pTpmCrypto->DecryptDataWithPassword(encryptedData, password, decryptedData)) {
+            if (!pTpmCrypto->DecryptDataWithPassword(password, encryptedData, decryptedData)) {
                 std::cerr << "Decryption failed.\n";
                 return;
             }
