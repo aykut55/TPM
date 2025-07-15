@@ -144,6 +144,299 @@ bool CTpmCrypto::Initialize(void)
     return fncReturn;
 }
 
+// ***********************************************************************************************************************
+
+bool CTpmCrypto::EncryptDataChunked(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
+{
+    encrypted.clear();
+
+    const size_t CHUNK_SIZE = 1024;  // TPM AES limit
+    size_t offset = 0;
+
+    while (offset < plain.size())
+    {
+        size_t currentChunkSize = std::min(CHUNK_SIZE, plain.size() - offset);
+        std::vector<BYTE> chunk(plain.begin() + offset, plain.begin() + offset + currentChunkSize);
+        std::vector<BYTE> encryptedChunk;
+
+        if (!EncryptData(chunk, encryptedChunk))
+        {
+            m_lastError = "EncryptDataChunked: failed on a chunk";
+            return false;
+        }
+
+        // Chunk size + chunk data
+        uint32_t chunkSize = static_cast<uint32_t>(encryptedChunk.size());
+        encrypted.insert(encrypted.end(),
+            reinterpret_cast<BYTE*>(&chunkSize),
+            reinterpret_cast<BYTE*>(&chunkSize) + sizeof(uint32_t));
+        encrypted.insert(encrypted.end(), encryptedChunk.begin(), encryptedChunk.end());
+
+        offset += currentChunkSize;
+    }
+
+    return true;
+}
+
+bool CTpmCrypto::DecryptDataChunked(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
+{
+    plain.clear();
+
+    size_t offset = 0;
+
+    while (offset + sizeof(uint32_t) <= encrypted.size())
+    {
+        // Chunk length
+        uint32_t chunkSize = 0;
+        std::memcpy(&chunkSize, encrypted.data() + offset, sizeof(uint32_t));
+        offset += sizeof(uint32_t);
+
+        if (offset + chunkSize > encrypted.size())
+        {
+            m_lastError = "DecryptDataChunked: corrupted data (chunk size overrun)";
+            return false;
+        }
+
+        std::vector<BYTE> encryptedChunk(encrypted.begin() + offset, encrypted.begin() + offset + chunkSize);
+        std::vector<BYTE> decryptedChunk;
+
+        if (!DecryptData(encryptedChunk, decryptedChunk))
+        {
+            m_lastError = "DecryptDataChunked: failed on a chunk";
+            return false;
+        }
+
+        plain.insert(plain.end(), decryptedChunk.begin(), decryptedChunk.end());
+        offset += chunkSize;
+    }
+
+    return true;
+}
+
+bool CTpmCrypto::EncryptData(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
+{
+    try
+    {
+        if (plain.empty())
+        {
+            m_lastError = "EncryptData: input is empty.";
+            return false;
+        }
+
+        return EncryptDecryptInternal(plain, encrypted, true); // true = encrypt
+    }
+    catch (const std::exception& ex)
+    {
+        m_lastError = std::string("EncryptData exception: ") + ex.what();
+        return false;
+    }
+}
+
+bool CTpmCrypto::DecryptData(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
+{
+    try
+    {
+        if (encrypted.empty())
+        {
+            m_lastError = "DecryptData: input is empty.";
+            return false;
+        }
+
+        return EncryptDecryptInternal(encrypted, plain, false); // false = decrypt
+    }
+    catch (const std::exception& ex)
+    {
+        m_lastError = std::string("DecryptData exception: ") + ex.what();
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptDecryptInternal(const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt)
+{
+    try
+    {
+        if (!tpm || !m_aesKeyHandle)
+        {
+            m_lastError = "TPM not initialized or AES key not loaded.";
+            return false;
+        }
+
+        //TPM2B_IV iv(16); // 16-byte null IV
+        ByteVec iv(16);
+        std::fill(iv.begin(), iv.end(), 0);  // Hepsini sıfırla
+
+        auto result = tpm->EncryptDecrypt(
+            m_aesKeyHandle,
+            encrypt ? (BYTE)0 : (BYTE)1,
+            TPM_ALG_ID::CFB,
+            iv,
+            inData
+        );
+
+        outData = result.outData;
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        m_lastError = std::string("EncryptDecryptInternal exception: ") + ex.what();
+        std::cerr << m_lastError << std::endl;
+        return false;
+    }
+}
+
+// ***********************************************************************************************************************
+
+bool CTpmCrypto::EncryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
+{
+    try
+    {
+        const size_t CHUNK_SIZE = 1024;
+        size_t offset = 0;
+        encrypted.clear();
+
+        while (offset < plain.size())
+        {
+            size_t currentChunkSize = std::min(CHUNK_SIZE, plain.size() - offset);
+            std::vector<BYTE> chunk(plain.begin() + offset, plain.begin() + offset + currentChunkSize);
+            std::vector<BYTE> encryptedChunk;
+
+            if (!EncryptDataWithPassword(password, chunk, encryptedChunk))
+            {
+                m_lastError = "EncryptDataWithPasswordChunked: encryption failed on chunk";
+                return false;
+            }
+
+            uint32_t size = static_cast<uint32_t>(encryptedChunk.size());
+            encrypted.insert(encrypted.end(), reinterpret_cast<BYTE*>(&size), reinterpret_cast<BYTE*>(&size) + sizeof(size));
+            encrypted.insert(encrypted.end(), encryptedChunk.begin(), encryptedChunk.end());
+
+            offset += currentChunkSize;
+        }
+
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        m_lastError = std::string("EncryptDataWithPasswordChunked exception: ") + ex.what();
+        return false;
+    }
+}
+
+bool CTpmCrypto::DecryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
+{
+    try
+    {
+        size_t offset = 0;
+        plain.clear();
+
+        while (offset + sizeof(uint32_t) <= encrypted.size())
+        {
+            uint32_t chunkSize = 0;
+            std::memcpy(&chunkSize, &encrypted[offset], sizeof(uint32_t));
+            offset += sizeof(uint32_t);
+
+            if (offset + chunkSize > encrypted.size())
+            {
+                m_lastError = "DecryptDataWithPasswordChunked: corrupted or incomplete chunk";
+                return false;
+            }
+
+            std::vector<BYTE> encryptedChunk(encrypted.begin() + offset, encrypted.begin() + offset + chunkSize);
+            std::vector<BYTE> decryptedChunk;
+
+            if (!DecryptDataWithPassword(password, encryptedChunk, decryptedChunk))
+            {
+                m_lastError = "DecryptDataWithPasswordChunked: decryption failed on chunk";
+                return false;
+            }
+
+            plain.insert(plain.end(), decryptedChunk.begin(), decryptedChunk.end());
+            offset += chunkSize;
+        }
+
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        m_lastError = std::string("DecryptDataWithPasswordChunked exception: ") + ex.what();
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptDataWithPassword(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
+{
+    return EncryptDecryptInternalWithPassword(password, plain, encrypted, true);
+}
+
+bool CTpmCrypto::DecryptDataWithPassword(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
+{
+    return EncryptDecryptInternalWithPassword(password, encrypted, plain, false);
+}
+
+bool CTpmCrypto::EncryptDecryptInternalWithPassword(const std::string& password, const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt)
+{
+    try
+    {
+        if (!tpm)
+        {
+            std::cerr << "[CTpmCrypto] TPM not initialized.\n";
+            return false;
+        }
+
+        if (!m_aesKeyHandle)
+        {
+            std::cerr << "[CTpmCrypto] AES key handle not loaded.\n";
+            return false;
+        }
+
+        // Set auth using password (PIN) for the AES key handle
+        m_aesKeyHandle.SetAuth(std::vector<BYTE>(password.begin(), password.end()));
+
+        ByteVec iv(16, 0); // Zero IV
+        auto result = tpm->EncryptDecrypt(
+            m_aesKeyHandle,
+            encrypt ? (BYTE)0 : (BYTE)1,
+            TPM_ALG_ID::CFB,
+            iv,
+            inData
+        );
+
+        outData = result.outData;
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        std::cerr << "[CTpmCrypto] EncryptDecryptInternalWithPassword exception: " << ex.what() << std::endl;
+        return false;
+    }
+}
+
+// ***********************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 bool CTpmCrypto::GenerateAndLoadAesKey()
 {
     try
@@ -686,76 +979,8 @@ bool CTpmCrypto::DecryptFileChunked(const std::string& inputFile, const std::str
 }
 
 
-bool CTpmCrypto::EncryptData(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
-{
-    try
-    {
-        if (plain.empty())
-        {
-            m_lastError = "EncryptData: input is empty.";
-            return false;
-        }
 
-        return EncryptDecryptInternal(plain, encrypted, true); // true = encrypt
-    }
-    catch (const std::exception& ex)
-    {
-        m_lastError = std::string("EncryptData exception: ") + ex.what();
-        return false;
-    }
-}
 
-bool CTpmCrypto::DecryptData(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
-{
-    try
-    {
-        if (encrypted.empty())
-        {
-            m_lastError = "DecryptData: input is empty.";
-            return false;
-        }
-
-        return EncryptDecryptInternal(encrypted, plain, false); // false = decrypt
-    }
-    catch (const std::exception& ex)
-    {
-        m_lastError = std::string("DecryptData exception: ") + ex.what();
-        return false;
-    }
-}
-
-bool CTpmCrypto::EncryptDecryptInternal(const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt)
-{
-    try
-    {
-        if (!tpm || !m_aesKeyHandle)
-        {
-            m_lastError = "TPM not initialized or AES key not loaded.";
-            return false;
-        }
-
-        //TPM2B_IV iv(16); // 16-byte null IV
-        ByteVec iv(16);
-        std::fill(iv.begin(), iv.end(), 0);  // Hepsini sıfırla
-
-        auto result = tpm->EncryptDecrypt(
-            m_aesKeyHandle,
-            encrypt ? (BYTE)0 : (BYTE)1,
-            TPM_ALG_ID::CFB,
-            iv,
-            inData
-        );
-
-        outData = result.outData;
-        return true;
-    }
-    catch (const std::exception& ex)
-    {
-        m_lastError = std::string("EncryptDecryptInternal exception: ") + ex.what();
-        std::cerr << m_lastError << std::endl;
-        return false;
-    }
-}
 
 
 
@@ -810,53 +1035,8 @@ void CTpmCrypto::EncryptDecryptSample()
     tpm->FlushContext(aesHandle);
 }
 
-bool CTpmCrypto::EncryptDataWithPassword(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
-{
-    return EncryptDecryptInternalWithPassword(password, plain, encrypted, true);
-}
 
-bool CTpmCrypto::DecryptDataWithPassword(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
-{
-    return EncryptDecryptInternalWithPassword(password, encrypted, plain, false);
-}
 
-bool CTpmCrypto::EncryptDecryptInternalWithPassword(const std::string& password, const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt)
-{
-    try
-    {
-        if (!tpm)
-        {
-            std::cerr << "[CTpmCrypto] TPM not initialized.\n";
-            return false;
-        }
-
-        if (!m_aesKeyHandle)
-        {
-            std::cerr << "[CTpmCrypto] AES key handle not loaded.\n";
-            return false;
-        }
-
-        // Set auth using password (PIN) for the AES key handle
-        m_aesKeyHandle.SetAuth(std::vector<BYTE>(password.begin(), password.end()));
-
-        ByteVec iv(16, 0); // Zero IV
-        auto result = tpm->EncryptDecrypt(
-            m_aesKeyHandle,
-            encrypt ? (BYTE)0 : (BYTE)1,
-            TPM_ALG_ID::CFB,
-            iv,
-            inData
-        );
-
-        outData = result.outData;
-        return true;
-    }
-    catch (const std::exception& ex)
-    {
-        std::cerr << "[CTpmCrypto] EncryptDecryptInternalWithPassword exception: " << ex.what() << std::endl;
-        return false;
-    }
-}
 
 bool CTpmCrypto::EncryptByteWithPassword(BYTE value, const std::string& password, std::vector<BYTE>& encryptedOut)
 {
@@ -1232,72 +1412,6 @@ uint64_t CTpmCrypto::GetFileSize2(const std::string& filePath)
     return fileSize;
 }
 
-bool CTpmCrypto::EncryptDataChunked(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
-{
-    encrypted.clear();
-
-    const size_t CHUNK_SIZE = 1024;  // TPM AES limit
-    size_t offset = 0;
-
-    while (offset < plain.size())
-    {
-        size_t currentChunkSize = std::min(CHUNK_SIZE, plain.size() - offset);
-        std::vector<BYTE> chunk(plain.begin() + offset, plain.begin() + offset + currentChunkSize);
-        std::vector<BYTE> encryptedChunk;
-
-        if (!EncryptData(chunk, encryptedChunk))
-        {
-            m_lastError = "EncryptDataChunked: failed on a chunk";
-            return false;
-        }
-
-        // Chunk size + chunk data
-        uint32_t chunkSize = static_cast<uint32_t>(encryptedChunk.size());
-        encrypted.insert(encrypted.end(),
-            reinterpret_cast<BYTE*>(&chunkSize),
-            reinterpret_cast<BYTE*>(&chunkSize) + sizeof(uint32_t));
-        encrypted.insert(encrypted.end(), encryptedChunk.begin(), encryptedChunk.end());
-
-        offset += currentChunkSize;
-    }
-
-    return true;
-}
-
-bool CTpmCrypto::DecryptDataChunked(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
-{
-    plain.clear();
-
-    size_t offset = 0;
-
-    while (offset + sizeof(uint32_t) <= encrypted.size())
-    {
-        // Chunk length
-        uint32_t chunkSize = 0;
-        std::memcpy(&chunkSize, encrypted.data() + offset, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        if (offset + chunkSize > encrypted.size())
-        {
-            m_lastError = "DecryptDataChunked: corrupted data (chunk size overrun)";
-            return false;
-        }
-
-        std::vector<BYTE> encryptedChunk(encrypted.begin() + offset, encrypted.begin() + offset + chunkSize);
-        std::vector<BYTE> decryptedChunk;
-
-        if (!DecryptData(encryptedChunk, decryptedChunk))
-        {
-            m_lastError = "DecryptDataChunked: failed on a chunk";
-            return false;
-        }
-
-        plain.insert(plain.end(), decryptedChunk.begin(), decryptedChunk.end());
-        offset += chunkSize;
-    }
-
-    return true;
-}
 
 bool CTpmCrypto::EncryptFileWithPasswordChunked(const std::string& inputFile, const std::string& outputFile, const std::string& password)
 {
@@ -1384,82 +1498,6 @@ bool CTpmCrypto::DecryptFileWithPasswordChunked(const std::string& inputFile, co
     return true;
 }
 
-bool CTpmCrypto::EncryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted)
-{
-    try
-    {
-        const size_t CHUNK_SIZE = 1024;
-        size_t offset = 0;
-        encrypted.clear();
-
-        while (offset < plain.size())
-        {
-            size_t currentChunkSize = std::min(CHUNK_SIZE, plain.size() - offset);
-            std::vector<BYTE> chunk(plain.begin() + offset, plain.begin() + offset + currentChunkSize);
-            std::vector<BYTE> encryptedChunk;
-
-            if (!EncryptDataWithPassword(password, chunk, encryptedChunk))
-            {
-                m_lastError = "EncryptDataWithPasswordChunked: encryption failed on chunk";
-                return false;
-            }
-
-            uint32_t size = static_cast<uint32_t>(encryptedChunk.size());
-            encrypted.insert(encrypted.end(), reinterpret_cast<BYTE*>(&size), reinterpret_cast<BYTE*>(&size) + sizeof(size));
-            encrypted.insert(encrypted.end(), encryptedChunk.begin(), encryptedChunk.end());
-
-            offset += currentChunkSize;
-        }
-
-        return true;
-    }
-    catch (const std::exception& ex)
-    {
-        m_lastError = std::string("EncryptDataWithPasswordChunked exception: ") + ex.what();
-        return false;
-    }
-}
-
-bool CTpmCrypto::DecryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain)
-{
-    try
-    {
-        size_t offset = 0;
-        plain.clear();
-
-        while (offset + sizeof(uint32_t) <= encrypted.size())
-        {
-            uint32_t chunkSize = 0;
-            std::memcpy(&chunkSize, &encrypted[offset], sizeof(uint32_t));
-            offset += sizeof(uint32_t);
-
-            if (offset + chunkSize > encrypted.size())
-            {
-                m_lastError = "DecryptDataWithPasswordChunked: corrupted or incomplete chunk";
-                return false;
-            }
-
-            std::vector<BYTE> encryptedChunk(encrypted.begin() + offset, encrypted.begin() + offset + chunkSize);
-            std::vector<BYTE> decryptedChunk;
-
-            if (!DecryptDataWithPassword(password, encryptedChunk, decryptedChunk))
-            {
-                m_lastError = "DecryptDataWithPasswordChunked: decryption failed on chunk";
-                return false;
-            }
-
-            plain.insert(plain.end(), decryptedChunk.begin(), decryptedChunk.end());
-            offset += chunkSize;
-        }
-
-        return true;
-    }
-    catch (const std::exception& ex)
-    {
-        m_lastError = std::string("DecryptDataWithPasswordChunked exception: ") + ex.what();
-        return false;
-    }
-}
 
 bool CTpmCrypto::CompareFiles(const std::string& file1, const std::string& file2)
 {
@@ -1475,10 +1513,10 @@ bool CTpmCrypto::CompareFiles(const std::string& file1, const std::string& file2
     return std::vector<char>(begin1, end1) == std::vector<char>(begin2, end2);
 }
 
-void CTpmCrypto::BuildTestFile(const std::string& inputFile)
+void CTpmCrypto::BuildTestFile(const std::string& inputFile, const int inputFileSizeByte)
 {
     std::ofstream out(inputFile, std::ios::binary);
-    for (int i = 0; i < 50000; ++i)  // ~50 KB örnek veri
+    for (int i = 0; i < inputFileSizeByte; ++i)  
     {
         char val = static_cast<char>(i % 256);
         out.write(&val, 1);
@@ -1744,4 +1782,734 @@ bool CTpmCrypto::IsPasswordValidForCurrentAesKey(const std::string& password) {
 
     auto currentHash = ComputePasswordHash(password);
     return currentHash == expectedHash;
+}
+
+
+
+
+
+
+
+bool CTpmCrypto::EncryptIntChunked(int value, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        // Int'i BYTE vektörüne dönüştür
+        std::vector<BYTE> plain(sizeof(int));
+        std::memcpy(plain.data(), &value, sizeof(int));
+
+        // Chunked AES şifreleme
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::DecryptIntChunked(const std::vector<BYTE>& encryptedData, int& valueOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        if (decrypted.size() != sizeof(int))
+            return false;
+
+        std::memcpy(&valueOut, decrypted.data(), sizeof(int));
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptFloatChunked(float value, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain(sizeof(float));
+        std::memcpy(plain.data(), &value, sizeof(float));
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::DecryptFloatChunked(const std::vector<BYTE>& encryptedData, float& valueOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        if (decrypted.size() != sizeof(float))
+            return false;
+
+        std::memcpy(&valueOut, decrypted.data(), sizeof(float));
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptDoubleChunked(double value, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain(sizeof(double));
+        std::memcpy(plain.data(), &value, sizeof(double));
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::DecryptDoubleChunked(const std::vector<BYTE>& encryptedData, double& valueOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        if (decrypted.size() != sizeof(double))
+            return false;
+
+        std::memcpy(&valueOut, decrypted.data(), sizeof(double));
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptByteChunked(BYTE value, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain(1, value);
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::DecryptByteChunked(const std::vector<BYTE>& encryptedData, BYTE& valueOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        if (decrypted.size() != 1)
+            return false;
+
+        valueOut = decrypted[0];
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptCharChunked(char value, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain(1);
+        plain[0] = static_cast<BYTE>(value);
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::DecryptCharChunked(const std::vector<BYTE>& encryptedData, char& valueOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        if (decrypted.size() != 1)
+            return false;
+
+        valueOut = static_cast<char>(decrypted[0]);
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptStringChunked(const std::string& str, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        const BYTE* data = reinterpret_cast<const BYTE*>(str.data());
+        std::vector<BYTE> plain(data, data + str.size());
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::DecryptStringChunked(const std::vector<BYTE>& encryptedData, std::string& strOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        strOut.assign(decrypted.begin(), decrypted.end());
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptIntArrayChunked(const std::vector<int>& values, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain(values.size() * sizeof(int));
+        std::memcpy(plain.data(), values.data(), plain.size());
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptFloatArrayChunked(const std::vector<float>& values, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain(values.size() * sizeof(float));
+        std::memcpy(plain.data(), values.data(), plain.size());
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptDoubleArrayChunked(const std::vector<double>& values, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain(values.size() * sizeof(double));
+        std::memcpy(plain.data(), values.data(), plain.size());
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptByteArrayChunked(const std::vector<BYTE>& values, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        return EncryptDataChunked(values, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptCharArrayChunked(const std::vector<char>& values, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain(values.begin(), values.end());
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptStringArrayChunked(const std::vector<std::string>& values, std::vector<BYTE>& encryptedOut)
+{
+    try
+    {
+        std::vector<BYTE> plain;
+
+        for (const auto& str : values)
+        {
+            uint32_t len = static_cast<uint32_t>(str.size());
+            plain.insert(plain.end(), reinterpret_cast<BYTE*>(&len), reinterpret_cast<BYTE*>(&len) + sizeof(len));
+            plain.insert(plain.end(), str.begin(), str.end());
+        }
+
+        return EncryptDataChunked(plain, encryptedOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptIntArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<int>& valuesOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        if (decrypted.size() % sizeof(int) != 0)
+            return false;
+
+        size_t count = decrypted.size() / sizeof(int);
+        valuesOut.resize(count);
+        std::memcpy(valuesOut.data(), decrypted.data(), decrypted.size());
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptFloatArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<float>& valuesOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        if (decrypted.size() % sizeof(float) != 0)
+            return false;
+
+        size_t count = decrypted.size() / sizeof(float);
+        valuesOut.resize(count);
+        std::memcpy(valuesOut.data(), decrypted.data(), decrypted.size());
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptDoubleArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<double>& valuesOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        if (decrypted.size() % sizeof(double) != 0)
+            return false;
+
+        size_t count = decrypted.size() / sizeof(double);
+        valuesOut.resize(count);
+        std::memcpy(valuesOut.data(), decrypted.data(), decrypted.size());
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptByteArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<BYTE>& valuesOut)
+{
+    try
+    {
+        return DecryptDataChunked(encryptedData, valuesOut);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptCharArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<char>& valuesOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        valuesOut.assign(decrypted.begin(), decrypted.end());
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptStringArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<std::string>& valuesOut)
+{
+    try
+    {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataChunked(encryptedData, decrypted))
+            return false;
+
+        valuesOut.clear();
+        size_t pos = 0;
+
+        while (pos + sizeof(uint32_t) <= decrypted.size())
+        {
+            uint32_t len = 0;
+            std::memcpy(&len, &decrypted[pos], sizeof(uint32_t));
+            pos += sizeof(uint32_t);
+
+            if (pos + len > decrypted.size())
+                return false;
+
+            std::string str(decrypted.begin() + pos, decrypted.begin() + pos + len);
+            valuesOut.push_back(str);
+            pos += len;
+        }
+
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptIntWithPasswordChunked(const std::string& password, int value, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(sizeof(int));
+        std::memcpy(plain.data(), &value, sizeof(int));
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptFloatWithPasswordChunked(const std::string& password, float value, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(sizeof(float));
+        std::memcpy(plain.data(), &value, sizeof(float));
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptDoubleWithPasswordChunked(const std::string& password, double value, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(sizeof(double));
+        std::memcpy(plain.data(), &value, sizeof(double));
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptByteWithPasswordChunked(const std::string& password, BYTE value, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(1, value);
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptCharWithPasswordChunked(const std::string& password, char value, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(1, static_cast<BYTE>(value));
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptStringWithPasswordChunked(const std::string& password, const std::string& str, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        const BYTE* data = reinterpret_cast<const BYTE*>(str.data());
+        std::vector<BYTE> plain(data, data + str.size());
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptIntWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, int& valueOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted) || decrypted.size() != sizeof(int))
+            return false;
+        std::memcpy(&valueOut, decrypted.data(), sizeof(int));
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptFloatWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, float& valueOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted) || decrypted.size() != sizeof(float))
+            return false;
+        std::memcpy(&valueOut, decrypted.data(), sizeof(float));
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptDoubleWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, double& valueOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted) || decrypted.size() != sizeof(double))
+            return false;
+        std::memcpy(&valueOut, decrypted.data(), sizeof(double));
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptByteWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, BYTE& valueOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted) || decrypted.size() != 1)
+            return false;
+        valueOut = decrypted[0];
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptCharWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, char& valueOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted) || decrypted.size() != 1)
+            return false;
+        valueOut = static_cast<char>(decrypted[0]);
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptStringWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::string& strOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted))
+            return false;
+        strOut.assign(decrypted.begin(), decrypted.end());
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+
+bool CTpmCrypto::EncryptIntArrayWithPasswordChunked(const std::string& password, const std::vector<int>& values, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(values.size() * sizeof(int));
+        std::memcpy(plain.data(), values.data(), plain.size());
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptFloatArrayWithPasswordChunked(const std::string& password, const std::vector<float>& values, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(values.size() * sizeof(float));
+        std::memcpy(plain.data(), values.data(), plain.size());
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptDoubleArrayWithPasswordChunked(const std::string& password, const std::vector<double>& values, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(values.size() * sizeof(double));
+        std::memcpy(plain.data(), values.data(), plain.size());
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptByteArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& values, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        return EncryptDataWithPasswordChunked(password, values, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptCharArrayWithPasswordChunked(const std::string& password, const std::vector<char>& values, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain(values.begin(), values.end());
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::EncryptStringArrayWithPasswordChunked(const std::string& password, const std::vector<std::string>& values, std::vector<BYTE>& encryptedOut)
+{
+    try {
+        std::vector<BYTE> plain;
+
+        for (const auto& str : values)
+        {
+            uint32_t len = static_cast<uint32_t>(str.size());
+            plain.insert(plain.end(), reinterpret_cast<BYTE*>(&len), reinterpret_cast<BYTE*>(&len) + sizeof(len));
+            plain.insert(plain.end(), str.begin(), str.end());
+        }
+
+        return EncryptDataWithPasswordChunked(password, plain, encryptedOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptIntArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<int>& valuesOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted) || decrypted.size() % sizeof(int) != 0)
+            return false;
+
+        size_t count = decrypted.size() / sizeof(int);
+        valuesOut.resize(count);
+        std::memcpy(valuesOut.data(), decrypted.data(), decrypted.size());
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptFloatArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<float>& valuesOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted) || decrypted.size() % sizeof(float) != 0)
+            return false;
+
+        size_t count = decrypted.size() / sizeof(float);
+        valuesOut.resize(count);
+        std::memcpy(valuesOut.data(), decrypted.data(), decrypted.size());
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptDoubleArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<double>& valuesOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted) || decrypted.size() % sizeof(double) != 0)
+            return false;
+
+        size_t count = decrypted.size() / sizeof(double);
+        valuesOut.resize(count);
+        std::memcpy(valuesOut.data(), decrypted.data(), decrypted.size());
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptByteArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<BYTE>& valuesOut)
+{
+    try {
+        return DecryptDataWithPasswordChunked(password, encryptedData, valuesOut);
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptCharArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<char>& valuesOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted))
+            return false;
+
+        valuesOut.assign(decrypted.begin(), decrypted.end());
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+bool CTpmCrypto::DecryptStringArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<std::string>& valuesOut)
+{
+    try {
+        std::vector<BYTE> decrypted;
+        if (!DecryptDataWithPasswordChunked(password, encryptedData, decrypted))
+            return false;
+
+        valuesOut.clear();
+        size_t pos = 0;
+
+        while (pos + sizeof(uint32_t) <= decrypted.size())
+        {
+            uint32_t len = 0;
+            std::memcpy(&len, &decrypted[pos], sizeof(uint32_t));
+            pos += sizeof(uint32_t);
+
+            if (pos + len > decrypted.size())
+                return false;
+
+            std::string str(decrypted.begin() + pos, decrypted.begin() + pos + len);
+            valuesOut.push_back(str);
+            pos += len;
+        }
+
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
 }

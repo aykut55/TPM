@@ -27,9 +27,23 @@ public:
     bool                     Release(void);
     bool                     Initialize(void);
 
-    bool    GenerateAndLoadAesKey();
-    bool    UnloadAndClearAesKey();
-    bool    ResetAesKey();
+    // ***********************************************************************************************************************
+    
+    // Encrypt/Decrypt (with Password TMP-AES key)
+    bool EncryptDataChunked(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
+    bool DecryptDataChunked(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
+    bool EncryptData(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
+    bool DecryptData(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
+    bool EncryptDecryptInternal(const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt);
+
+    // Encrypt/Decrypt (with Password PIN-protected AES key)
+    bool EncryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
+    bool DecryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
+    bool EncryptDataWithPassword(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
+    bool DecryptDataWithPassword(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
+    bool EncryptDecryptInternalWithPassword(const std::string& password, const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt);
+    
+    // ***********************************************************************************************************************
 
     // Encrypt - simple types
     bool EncryptByte(BYTE value, std::vector<BYTE>& encryptedOut);
@@ -67,10 +81,42 @@ public:
     bool  EncryptFile(const std::string& inputFile, const std::string& outputFile);
     bool  DecryptFile(const std::string& inputFile, const std::string& outputFile);
 
+    // ***********************************************************************************************************************
+
+    bool EncryptIntChunked(int value, std::vector<BYTE>& encryptedOut);
+    bool EncryptFloatChunked(float value, std::vector<BYTE>& encryptedOut);
+    bool EncryptDoubleChunked(double value, std::vector<BYTE>& encryptedOut);
+    bool EncryptByteChunked(BYTE value, std::vector<BYTE>& encryptedOut);
+    bool EncryptCharChunked(char value, std::vector<BYTE>& encryptedOut);
+    bool EncryptStringChunked(const std::string& str, std::vector<BYTE>& encryptedOut);
+
+    bool DecryptIntChunked(const std::vector<BYTE>& encryptedData, int& valueOut);
+    bool DecryptFloatChunked(const std::vector<BYTE>& encryptedData, float& valueOut);
+    bool DecryptDoubleChunked(const std::vector<BYTE>& encryptedData, double& valueOut);
+    bool DecryptByteChunked(const std::vector<BYTE>& encryptedData, BYTE& valueOut);
+    bool DecryptCharChunked(const std::vector<BYTE>& encryptedData, char& valueOut);
+    bool DecryptStringChunked(const std::vector<BYTE>& encryptedData, std::string& strOut);
+
+    bool EncryptIntArrayChunked(const std::vector<int>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptFloatArrayChunked(const std::vector<float>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptDoubleArrayChunked(const std::vector<double>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptByteArrayChunked(const std::vector<BYTE>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptCharArrayChunked(const std::vector<char>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptStringArrayChunked(const std::vector<std::string>& values, std::vector<BYTE>& encryptedOut);
+
+    bool DecryptIntArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<int>& valuesOut);
+    bool DecryptFloatArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<float>& valuesOut);
+    bool DecryptDoubleArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<double>& valuesOut);
+    bool DecryptByteArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<BYTE>& valuesOut);
+    bool DecryptCharArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<char>& valuesOut);
+    bool DecryptStringArrayChunked(const std::vector<BYTE>& encryptedData, std::vector<std::string>& valuesOut);
+
+
     // Buyuk boyutlu dosyalarda da tamam
     bool  EncryptFileChunked(const std::string& inputFile, const std::string& outputFile, size_t chunkSize);
     bool  DecryptFileChunked(const std::string& inputFile, const std::string& outputFile);
 
+    // ***********************************************************************************************************************
 
     // Encrypt - simple types (with password)
     bool EncryptByteWithPassword(BYTE value, const std::string& password, std::vector<BYTE>& encryptedOut);
@@ -105,8 +151,89 @@ public:
     bool DecryptStringArrayWithPassword(const std::vector<BYTE>& encryptedData, const std::string& password, std::vector<std::string>& valuesOut);
 
     // Encrypt/Decrypt files (with password)
+    // Kucuk boyutlu dosyalarda tamam ama buyuk boutlu dosyalarda hata veriyor
     bool EncryptFileWithPassword(const std::string& inputFile, const std::string& outputFile, const std::string& password);
     bool DecryptFileWithPassword(const std::string& inputFile, const std::string& outputFile, const std::string& password);
+
+    // ***********************************************************************************************************************
+
+    // Encrypt - simple types (with password, chunked)
+    bool EncryptByteWithPasswordChunked(const std::string& password, BYTE value, std::vector<BYTE>& encryptedOut);
+    bool EncryptCharWithPasswordChunked(const std::string& password, char value, std::vector<BYTE>& encryptedOut);
+    bool EncryptIntWithPasswordChunked(const std::string& password, int value, std::vector<BYTE>& encryptedOut);
+    bool EncryptFloatWithPasswordChunked(const std::string& password, float value, std::vector<BYTE>& encryptedOut);
+    bool EncryptDoubleWithPasswordChunked(const std::string& password, double value, std::vector<BYTE>& encryptedOut);
+    bool EncryptStringWithPasswordChunked(const std::string& password, const std::string& str, std::vector<BYTE>& encryptedOut);
+
+    // Decrypt - simple types (with password, chunked)
+    bool DecryptByteWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, BYTE& valueOut);
+    bool DecryptCharWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, char& valueOut);
+    bool DecryptIntWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, int& valueOut);
+    bool DecryptFloatWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, float& valueOut);
+    bool DecryptDoubleWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, double& valueOut);
+    bool DecryptStringWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::string& strOut);
+
+    // Encrypt - array types (with password, chunked)
+    bool EncryptByteArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptCharArrayWithPasswordChunked(const std::string& password, const std::vector<char>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptIntArrayWithPasswordChunked(const std::string& password, const std::vector<int>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptFloatArrayWithPasswordChunked(const std::string& password, const std::vector<float>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptDoubleArrayWithPasswordChunked(const std::string& password, const std::vector<double>& values, std::vector<BYTE>& encryptedOut);
+    bool EncryptStringArrayWithPasswordChunked(const std::string& password, const std::vector<std::string>& values, std::vector<BYTE>& encryptedOut);
+
+    // Decrypt - array types (with password, chunked)
+    bool DecryptByteArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<BYTE>& valuesOut);
+    bool DecryptCharArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<char>& valuesOut);
+    bool DecryptIntArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<int>& valuesOut);
+    bool DecryptFloatArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<float>& valuesOut);
+    bool DecryptDoubleArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<double>& valuesOut);
+    bool DecryptStringArrayWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encryptedData, std::vector<std::string>& valuesOut);
+
+    bool EncryptFileWithPasswordChunked(const std::string& inputFile, const std::string& outputFile, const std::string& password);
+    bool DecryptFileWithPasswordChunked(const std::string& inputFile, const std::string& outputFile, const std::string& password);
+
+    // ***********************************************************************************************************************
+
+
+    // ***********************************************************************************************************************
+
+
+    // ***********************************************************************************************************************
+
+
+    // ***********************************************************************************************************************
+
+
+    // ***********************************************************************************************************************
+
+
+    // ***********************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+    bool    GenerateAndLoadAesKey();
+    bool    UnloadAndClearAesKey();
+    bool    ResetAesKey();
+
+
+
+
+
+
+
+
+
+
+
+
 
     bool            IsTooLargeForTpm(const std::vector<BYTE>& data);
     bool            IsTooLargeForTpm(const std::streamsize dataSize);
@@ -114,10 +241,8 @@ public:
     std::streamsize GetFileSize(const std::string& filePath);
     uint64_t        GetFileSize2(const std::string& filePath);
 
-    bool EncryptFileWithPasswordChunked(const std::string& inputFile, const std::string& outputFile, const std::string& password);
-    bool DecryptFileWithPasswordChunked(const std::string& inputFile, const std::string& outputFile, const std::string& password);
     bool CompareFiles(const std::string& file1, const std::string& file2);
-    void BuildTestFile(const std::string& inputFile);
+    void BuildTestFile(const std::string& inputFile, const int inputFileSizeByte = 50000);// ~50 KB örnek veri
 
     TPM_HANDLE              MakeStoragePrimary(AUTH_SESSION* sess);
     void                    EncryptDecryptSample();
@@ -125,24 +250,6 @@ public:
 protected:
 
 public:
-    // Chunked encrypt/decrypt
-    bool EncryptDataChunked(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
-    bool DecryptDataChunked(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
-    // encrypt/decrypt
-    bool EncryptData(const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
-    bool DecryptData(const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
-    // encrypt/decrypt internal
-    bool EncryptDecryptInternal(const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt);
-
-    // Encrypt/Decrypt with Password (PIN-protected AES key)
-    // Chunked encrypt/decrypt with password
-    bool EncryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
-    bool DecryptDataWithPasswordChunked(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
-    // encrypt/decrypt with password    
-    bool EncryptDataWithPassword(const std::string& password, const std::vector<BYTE>& plain, std::vector<BYTE>& encrypted);
-    bool DecryptDataWithPassword(const std::string& password, const std::vector<BYTE>& encrypted, std::vector<BYTE>& plain);
-    // encrypt/decrypt internal with password        
-    bool EncryptDecryptInternalWithPassword(const std::string& password, const std::vector<BYTE>& inData, std::vector<BYTE>& outData, bool encrypt);
 
 
 
