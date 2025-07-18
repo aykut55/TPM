@@ -124,7 +124,7 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;..\Src\Tpm;..\Src\Tpm\TpmBaseClass;..\Src\Tpm\TpmClockReader;..\Src\Tpm\TpmCounters;..\Src\Tpm\TpmCounters\TpmMonotonicCounter;..\Src\Tpm\TpmCounters\TpmOrdinaryCounter;..\Src\Tpm\TpmCounters\TpmWatchdogCounter;..\Src\Tpm\TpmDictionaryAttack;..\Src\Tpm\TpmHelpers;..\Src\Tpm\TpmIO;..\Src\Tpm\TpmIO\TpmReader;..\Src\Tpm\TpmIO\TpmWriter;..\Src\Tpm\TpmSecurity;..\Src\Tpm\TpmSecurity\TpmCrypto;..\Src\Tpm\TpmSecurity\TpmHash;..\Src\Tpm\TpmSecurity\TpmRandom;..\Src\Tpm\TpmSecurity\TpmSignature;..\Src\Tpm\TpmSharedDevice;..\Src\Tpm\TpmSlot;..\Src\Tpm\TpmSlot\TpmSlotManager;..\Src\Tpm\TpmSlot\TpmSlotReader;..\Src\Tpm\TpmSlot\TpmSlotSecurity;..\Src\Tpm\TpmSlot\TpmSlotWriter;..\Src\Tpm\TpmTimers;..\Src\Tpm\TpmTimers\TpmMonotonicTimer;..\Src\Tpm\TpmTimers\TpmOrdinaryTimer;..\Src\Tpm\TpmTimers\TpmWatchdogTimer;..\Src\Tpm\TpmUtils;..\Src\Tpm\TpmSharedFiles</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include;..\Src\Tpm;..\Src\Tpm\TpmBaseClass;..\Src\Tpm\TpmClockReader;..\Src\Tpm\TpmCounters;..\Src\Tpm\TpmCounters\TpmMonotonicCounter;..\Src\Tpm\TpmCounters\TpmOrdinaryCounter;..\Src\Tpm\TpmCounters\TpmWatchdogCounter;..\Src\Tpm\TpmDictionaryAttack;..\Src\Tpm\TpmHelpers;..\Src\Tpm\TpmIO;..\Src\Tpm\TpmIO\TpmReader;..\Src\Tpm\TpmIO\TpmWriter;..\Src\Tpm\TpmSecurity;..\Src\Tpm\TpmSecurity\TpmCrypto;..\Src\Tpm\TpmSecurity\TpmHash;..\Src\Tpm\TpmSecurity\TpmRandom;..\Src\Tpm\TpmSecurity\TpmSignature;..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureRSA;..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC;..\Src\Tpm\TpmSharedDevice;..\Src\Tpm\TpmSlot;..\Src\Tpm\TpmSlot\TpmSlotManager;..\Src\Tpm\TpmSlot\TpmSlotReader;..\Src\Tpm\TpmSlot\TpmSlotSecurity;..\Src\Tpm\TpmSlot\TpmSlotWriter;..\Src\Tpm\TpmTimers;..\Src\Tpm\TpmTimers\TpmMonotonicTimer;..\Src\Tpm\TpmTimers\TpmOrdinaryTimer;..\Src\Tpm\TpmTimers\TpmWatchdogTimer;..\Src\Tpm\TpmUtils;..\Src\Tpm\TpmSharedFiles</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4091</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -190,6 +190,9 @@
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHashTest.h" />
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmRandom\TpmRandom.h" />
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignature.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC\TpmSignatureHMAC.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureRSA\TpmSignatureRSA.h" />
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureTest.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\myTpmConfig.h" />
     <ClInclude Include="..\Src\Tpm\TpmSharedFiles\TpmSharedFiles.h" />
@@ -230,6 +233,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignature.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC\TpmSignatureHMAC.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureRSA\TpmSignatureRSA.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureTest.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Src\Tpm\TpmSharedDevice\TpmSharedDevice.cpp">

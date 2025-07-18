@@ -128,707 +128,97 @@ bool CTpmSignature::Initialize(void)
     return fncReturn;
 }
 
-BYTE CTpmSignature::ReadByteFromSlot(UINT32 slotNo)
+
+std::string CTpmSignature::EncodeHex(const std::vector<BYTE>& data, bool upperCase)
 {
-    try
-    {
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
 
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 5, 0);
-        if (readData.size() < 5)
-        {
-            Log("ReadByteFromSlot: insufficient data.", true);
-            return 0;
-        }
+    for (BYTE byte : data)
+        oss << std::setw(2) << (upperCase ? std::uppercase : std::nouppercase) << static_cast<int>(byte);
 
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::Byte)
-        {
-            Log("ReadByteFromSlot: type mismatch.", true);
-            return 0;
-        }
-
-        BYTE b = readData[4];
-        Log("Byte read from slot.");
-        return b;
-    }
-    catch (...)
-    {
-        Log("ReadByteFromSlot exception", true);
-        return 0;
-    }
+    return oss.str();
 }
 
-char CTpmSignature::ReadCharFromSlot(UINT32 slotNo)
-{
-    try
-    {
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 5, 0);
-        if (readData.size() < 5)
-        {
-            Log("ReadCharFromSlot: insufficient data.", true);
-            return '\0';
-        }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::Char)
-        {
-            Log("ReadCharFromSlot: type mismatch.", true);
-            return '\0';
-        }
-
-        char c = static_cast<char>(readData[4]);
-        Log("Char read from slot.");
-        return c;
-    }
-    catch (...)
-    {
-        Log("ReadCharFromSlot exception", true);
-        return '\0';
-    }
-}
-
-int CTpmSignature::ReadIntFromSlot(UINT32 slotNo)
-{
-    try
-    {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-        {
-            Log("Invalid slot number.", true);
-            return 0;
-        }
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        // tanımlı mı
-        auto resp = tpm->GetCapability(TPM_CAP::HANDLES, nvIndex, 1);
-        auto handles = dynamic_cast<TPML_HANDLE*>(&*resp.capabilityData)->handle;
-        bool exists = false;
-        for (auto h : handles)
-        {
-            if (h == nvIndex)
-            {
-                exists = true;
-                break;
-            }
-        }
-
-        if (!exists)
-        {
-            Log("Slot not defined.", true);
-            return 0;
-        }
-
-        // 8 byte oku (4 type + 4 int)
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 8, 0);
-
-        if (readData.size() < 8)
-        {
-            Log("ReadIntFromSlot: insufficient data.", true);
-            return 0;
-        }
-
-        // type kontrolü
-        uint32_t tag = 0;
-        tag |= readData[0] << 24;
-        tag |= readData[1] << 16;
-        tag |= readData[2] << 8;
-        tag |= readData[3];
-
-        if (static_cast<SlotType>(tag) != SlotType::Int)
-        {
-            Log("ReadIntFromSlot: type mismatch.", true);
-            return 0;
-        }
-
-        // asıl integer
-        int value = 0;
-        if (m_endianness == Endianness::LittleEndian)
-        {
-            value |= readData[4];
-            value |= readData[5] << 8;
-            value |= readData[6] << 16;
-            value |= readData[7] << 24;
-        }
-        else
-        {
-            value |= readData[4] << 24;
-            value |= readData[5] << 16;
-            value |= readData[6] << 8;
-            value |= readData[7];
-        }
-
-        Log("Int read from slot successfully.");
-        return value;
-    }
-    catch (const std::exception& ex)
-    {
-        Log(std::string("ReadIntFromSlot exception: ") + ex.what(), true);
-        return 0;
-    }
-    catch (...)
-    {
-        Log("ReadIntFromSlot unknown exception.", true);
-        return 0;
-    }
-}
-
-float CTpmSignature::ReadFloatFromSlot(UINT32 slotNo)
-{
-    try
-    {
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 8, 0);
-        if (readData.size() < 8)
-        {
-            Log("ReadFloatFromSlot: insufficient data.", true);
-            return 0.0f;
-        }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::Float)
-        {
-            Log("ReadFloatFromSlot: type mismatch.", true);
-            return 0.0f;
-        }
-
-        uint32_t raw = 0;
-        if (m_endianness == Endianness::LittleEndian)
-        {
-            raw |= readData[4];
-            raw |= readData[5] << 8;
-            raw |= readData[6] << 16;
-            raw |= readData[7] << 24;
-        }
-        else
-        {
-            raw |= readData[4] << 24;
-            raw |= readData[5] << 16;
-            raw |= readData[6] << 8;
-            raw |= readData[7];
-        }
-
-        float value;
-        std::memcpy(&value, &raw, sizeof(value));
-        Log("Float read from slot.");
-        return value;
-    }
-    catch (...)
-    {
-        Log("ReadFloatFromSlot exception", true);
-        return 0.0f;
-    }
-}
-
-double CTpmSignature::ReadDoubleFromSlot(UINT32 slotNo)
-{
-    try
-    {
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 12, 0);
-        if (readData.size() < 12)
-        {
-            Log("ReadDoubleFromSlot: insufficient data.", true);
-            return 0.0;
-        }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::Double)
-        {
-            Log("ReadDoubleFromSlot: type mismatch.", true);
-            return 0.0;
-        }
-
-        uint64_t raw = 0;
-        if (m_endianness == Endianness::LittleEndian)
-        {
-            for (int i = 0; i < 8; ++i)
-                raw |= static_cast<uint64_t>(readData[4 + i]) << (8 * i);
-        }
-        else
-        {
-            for (int i = 0; i < 8; ++i)
-                raw |= static_cast<uint64_t>(readData[4 + i]) << (8 * (7 - i));
-        }
-
-        double value;
-        std::memcpy(&value, &raw, sizeof(value));
-        Log("Double read from slot.");
-        return value;
-    }
-    catch (...)
-    {
-        Log("ReadDoubleFromSlot exception", true);
-        return 0.0;
-    }
-}
-
-std::string CTpmSignature::ReadStringFromSlot(UINT32 slotNo)
-{
-    try
-    {
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, TpmSignatureNS::SLOT_SIZE, 0);
-        if (readData.size() < 4)
-        {
-            Log("ReadStringFromSlot: insufficient data.", true);
-            return "";
-        }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::String)
-        {
-            Log("ReadStringFromSlot: type mismatch.", true);
-            return "";
-        }
-
-        std::string s(readData.begin() + 4, readData.end());
-        // trim nulls
-        auto zeroPos = s.find('\0');
-        if (zeroPos != std::string::npos)
-            s.resize(zeroPos);
-
-        Log("String read from slot.");
-        return s;
-    }
-    catch (...)
-    {
-        Log("ReadStringFromSlot exception", true);
-        return "";
-    }
-}
-
-std::vector<BYTE> CTpmSignature::ReadByteArrayFromSlot(UINT32 slotNo, size_t count)
+std::vector<BYTE> CTpmSignature::DecodeHex(const std::string& hexStr)
 {
     std::vector<BYTE> result;
-    try
+
+    if (hexStr.length() % 2 != 0)
+        return result;
+
+    for (size_t i = 0; i < hexStr.length(); i += 2)
     {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-            return result;
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, TpmSignatureNS::SLOT_SIZE, 0);
-        if (readData.size() < 4)
-        {
-            Log("ReadByteArrayFromSlot: insufficient data.", true);
-            return result;
-        }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::ByteArray)
-        {
-            Log("ReadByteArrayFromSlot: type mismatch.", true);
-            return result;
-        }
-
-        result.insert(result.end(), readData.begin() + 4, readData.end());
-        Log("Byte array read from slot.");
+        std::string byteString = hexStr.substr(i, 2);
+        BYTE byte = static_cast<BYTE>(strtoul(byteString.c_str(), nullptr, 16));
+        result.push_back(byte);
     }
-    catch (...)
-    {
-        Log("ReadByteArrayFromSlot exception", true);
-    }
+
     return result;
 }
 
-std::vector<char> CTpmSignature::ReadCharArrayFromSlot(UINT32 slotNo, size_t count)
+std::string CTpmSignature::EncodeBase64(const std::vector<BYTE>& data)
 {
-    std::vector<char> result;
-    try
+    static const char* base64_chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "0123456789+/";
+
+    std::string encoded;
+    int val = 0, valb = -6;
+
+    for (BYTE c : data)
     {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-            return result;
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, TpmSignatureNS::SLOT_SIZE, 0);
-        if (readData.size() < 4)
+        val = (val << 8) + c;
+        valb += 8;
+        while (valb >= 0)
         {
-            Log("ReadCharArrayFromSlot: insufficient data.", true);
-            return result;
+            encoded.push_back(base64_chars[(val >> valb) & 0x3F]);
+            valb -= 6;
         }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::CharArray)
-        {
-            Log("ReadCharArrayFromSlot: type mismatch.", true);
-            return result;
-        }
-
-        result.insert(result.end(), readData.begin() + 4, readData.end());
-        Log("Char array read from slot.");
     }
-    catch (...)
-    {
-        Log("ReadCharArrayFromSlot exception", true);
-    }
-    return result;
+
+    if (valb > -6)
+        encoded.push_back(base64_chars[((val << 8) >> (valb + 8)) & 0x3F]);
+
+    while (encoded.size() % 4)
+        encoded.push_back('=');
+
+    return encoded;
 }
 
-std::vector<int> CTpmSignature::ReadIntArrayFromSlot(UINT32 slotNo, size_t count)
+std::vector<BYTE> CTpmSignature::DecodeBase64(const std::string& encoded)
 {
-    std::vector<int> result;
-    try
+    static const int decoding_table[256] = {
+        -1,-1,-1,-1,-1,-1,-1,-1,  // 0-7
+        -1,-1,-1,-1,-1,-1,-1,-1,  // 8-15
+        -1,-1,-1,-1,-1,-1,-1,-1,  // ...
+        -1,-1,-1,-1,-1,-1,-1,-1,
+        -1,-1,-1,-1,-1,-1,-1,-1,
+        -1,-1,-1,62,-1,-1,-1,63,  // '+', '/'
+        52,53,54,55,56,57,58,59,60,61, // '0'–'9'
+        -1,-1,-1,-1,-1,-1,-1,
+        0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, // 'A'–'T'
+        20,21,22,23,24,25,
+        -1,-1,-1,-1,-1,
+        26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51 // 'a'–'z'
+    };
+
+    std::vector<BYTE> decoded;
+    int val = 0, valb = -8;
+
+    for (char c : encoded)
     {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-            return result;
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, TpmSignatureNS::SLOT_SIZE, 0);
-
-        if (readData.size() < 4)
+        if (c == '=' || c < 0 || decoding_table[(unsigned char)c] == -1)
+            break;
+        val = (val << 6) + decoding_table[(unsigned char)c];
+        valb += 6;
+        if (valb >= 0)
         {
-            Log("ReadIntArrayFromSlot: insufficient data.", true);
-            return result;
+            decoded.push_back(static_cast<BYTE>((val >> valb) & 0xFF));
+            valb -= 8;
         }
-
-        // check type
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::IntArray)
-        {
-            Log("ReadIntArrayFromSlot: type mismatch.", true);
-            return result;
-        }
-
-        size_t count = (readData.size() - 4) / 4;
-
-        for (size_t i = 0; i < count; ++i)
-        {
-            int v = 0;
-            size_t idx = 4 + i * 4;
-
-            if (m_endianness == Endianness::LittleEndian)
-            {
-                v |= readData[idx];
-                v |= readData[idx + 1] << 8;
-                v |= readData[idx + 2] << 16;
-                v |= readData[idx + 3] << 24;
-            }
-            else
-            {
-                v |= readData[idx] << 24;
-                v |= readData[idx + 1] << 16;
-                v |= readData[idx + 2] << 8;
-                v |= readData[idx + 3];
-            }
-            result.push_back(v);
-        }
-        Log("Int array read from slot.");
     }
-    catch (...)
-    {
-        Log("ReadIntArrayFromSlot exception", true);
-    }
-    return result;
-}
 
-std::vector<float> CTpmSignature::ReadFloatArrayFromSlot(UINT32 slotNo, size_t count)
-{
-    std::vector<float> result;
-    try
-    {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-            return result;
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, TpmSignatureNS::SLOT_SIZE, 0);
-
-        if (readData.size() < 4)
-        {
-            Log("ReadFloatArrayFromSlot: insufficient data.", true);
-            return result;
-        }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::FloatArray)
-        {
-            Log("ReadFloatArrayFromSlot: type mismatch.", true);
-            return result;
-        }
-
-        size_t count = (readData.size() - 4) / 4;
-        for (size_t i = 0; i < count; ++i)
-        {
-            uint32_t raw = 0;
-            size_t idx = 4 + i * 4;
-            if (m_endianness == Endianness::LittleEndian)
-            {
-                raw |= readData[idx];
-                raw |= readData[idx + 1] << 8;
-                raw |= readData[idx + 2] << 16;
-                raw |= readData[idx + 3] << 24;
-            }
-            else
-            {
-                raw |= readData[idx] << 24;
-                raw |= readData[idx + 1] << 16;
-                raw |= readData[idx + 2] << 8;
-                raw |= readData[idx + 3];
-            }
-            float f;
-            std::memcpy(&f, &raw, sizeof(f));
-            result.push_back(f);
-        }
-        Log("Float array read from slot.");
-    }
-    catch (...)
-    {
-        Log("ReadFloatArrayFromSlot exception", true);
-    }
-    return result;
-}
-
-std::vector<double> CTpmSignature::ReadDoubleArrayFromSlot(UINT32 slotNo, size_t count)
-{
-    std::vector<double> result;
-    try
-    {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-            return result;
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, TpmSignatureNS::SLOT_SIZE, 0);
-        if (readData.size() < 4)
-        {
-            Log("ReadDoubleArrayFromSlot: insufficient data.", true);
-            return result;
-        }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::DoubleArray)
-        {
-            Log("ReadDoubleArrayFromSlot: type mismatch.", true);
-            return result;
-        }
-
-        size_t count = (readData.size() - 4) / 8;
-        for (size_t i = 0; i < count; ++i)
-        {
-            uint64_t raw = 0;
-            size_t idx = 4 + i * 8;
-            if (m_endianness == Endianness::LittleEndian)
-            {
-                for (int j = 0; j < 8; ++j)
-                    raw |= static_cast<uint64_t>(readData[idx + j]) << (8 * j);
-            }
-            else
-            {
-                for (int j = 0; j < 8; ++j)
-                    raw |= static_cast<uint64_t>(readData[idx + j]) << (8 * (7 - j));
-            }
-            double d;
-            std::memcpy(&d, &raw, sizeof(d));
-            result.push_back(d);
-        }
-        Log("Double array read from slot.");
-    }
-    catch (...)
-    {
-        Log("ReadDoubleArrayFromSlot exception", true);
-    }
-    return result;
-}
-
-std::vector<std::string> CTpmSignature::ReadStringArrayFromSlot(UINT32 slotNo)
-{
-    std::vector<std::string> result;
-    try
-    {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-            return result;
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, TpmSignatureNS::SLOT_SIZE, 0);
-        if (readData.size() < 4)
-        {
-            Log("ReadStringArrayFromSlot: insufficient data.", true);
-            return result;
-        }
-
-        uint32_t tag = (readData[0] << 24) | (readData[1] << 16) | (readData[2] << 8) | readData[3];
-        if (static_cast<SlotType>(tag) != SlotType::StringArray)
-        {
-            Log("ReadStringArrayFromSlot: type mismatch.", true);
-            return result;
-        }
-
-        std::string allStrings(readData.begin() + 4, readData.end());
-        std::istringstream ss(allStrings);
-        std::string token;
-
-        while (std::getline(ss, token, '\0'))
-        {
-            if (!token.empty())
-                result.push_back(token);
-        }
-
-        Log("String array read from slot.");
-    }
-    catch (...)
-    {
-        Log("ReadStringArrayFromSlot exception", true);
-    }
-    return result;
-}
-
-void CTpmSignature::SetEndianness(Endianness mode)
-{
-    m_endianness = mode;
-}
-
-Endianness CTpmSignature::GetEndianness() const
-{
-    return m_endianness;
-}
-
-bool CTpmSignature::SlotClear(UINT32 slotNo)
-{
-    try
-    {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-        {
-            Log("Invalid slot number.", true);
-            return false;
-        }
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        // NV alanı tanımlı mı kontrol et
-        auto resp = tpm->GetCapability(TPM_CAP::HANDLES, nvIndex, 1);
-        auto handles = dynamic_cast<TPML_HANDLE*>(&*resp.capabilityData)->handle;
-        bool exists = false;
-        for (auto h : handles)
-        {
-            if (h == nvIndex)
-            {
-                exists = true;
-                break;
-            }
-        }
-
-        if (!exists)
-        {
-            Log("Slot not defined, cannot clear.", true);
-            return false;
-        }
-
-        // 0x00 buffer
-        std::vector<BYTE> zeroData(TpmSignatureNS::SLOT_SIZE, 0x00);
-
-        tpm->NV_Write(TPM_RH::OWNER, nvIndex, zeroData, 0);
-        Log("Slot cleared successfully.");
-        return true;
-    }
-    catch (const std::exception& ex)
-    {
-        m_lastError = ex.what();
-        Log(std::string("SlotClear exception: ") + ex.what(), true);
-        return false;
-    }
-    catch (...)
-    {
-        Log("SlotClear unknown exception.", true);
-        return false;
-    }
-}
-
-bool CTpmSignature::SlotFree(UINT32 slotNo)
-{
-    try
-    {
-        if (slotNo >= TpmSignatureNS::SLOT_COUNT)
-        {
-            Log("Invalid slot number.", true);
-            return false;
-        }
-
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-
-        // NV alanı tanımlı mı kontrol et
-        auto resp = tpm->GetCapability(TPM_CAP::HANDLES, nvIndex, 1);
-        auto handles = dynamic_cast<TPML_HANDLE*>(&*resp.capabilityData)->handle;
-        bool exists = false;
-        for (auto h : handles)
-        {
-            if (h == nvIndex)
-            {
-                exists = true;
-                break;
-            }
-        }
-
-        if (!exists)
-        {
-            Log("Slot not defined, cannot free.", true);
-            return false;
-        }
-
-        tpm->NV_UndefineSpace(TPM_RH::OWNER, nvIndex);
-        Log("Slot freed successfully.");
-        return true;
-    }
-    catch (const std::exception& ex)
-    {
-        m_lastError = ex.what();
-        Log(std::string("SlotFree exception: ") + ex.what(), true);
-        return false;
-    }
-    catch (...)
-    {
-        Log("SlotFree unknown exception.", true);
-        return false;
-    }
-}
-
-std::vector<SlotInfo> CTpmSignature::SlotList()
-{
-    std::vector<SlotInfo> result;
-
-    for (UINT32 slotNo = 0; slotNo < TpmSignatureNS::SLOT_COUNT; ++slotNo)
-    {
-        UINT32 nvIndex = TpmSignatureNS::BASE_SLOT_INDEX + slotNo;
-        bool defined = false;
-        SlotType type = SlotType::Unknown;
-
-        try
-        {
-            auto resp = tpm->GetCapability(TPM_CAP::HANDLES, nvIndex, 1);
-            auto handles = dynamic_cast<TPML_HANDLE*>(&*resp.capabilityData)->handle;
-
-            for (auto h : handles)
-            {
-                if (h == nvIndex)
-                {
-                    defined = true;
-
-                    // ilk 4 byte: type imzası
-                    auto readData = tpm->NV_Read(TPM_RH::OWNER, nvIndex, 4, 0);
-                    if (readData.size() >= 4)
-                    {
-                        uint32_t tag = 0;
-                        tag |= readData[0] << 24;
-                        tag |= readData[1] << 16;
-                        tag |= readData[2] << 8;
-                        tag |= readData[3];
-                        type = static_cast<SlotType>(tag);
-                    }
-                    break;
-                }
-            }
-        }
-        catch (...)
-        {
-            defined = false;
-            type = SlotType::Unknown;
-        }
-
-        result.push_back({ slotNo, defined, type });
-    }
-    return result;
+    return decoded;
 }

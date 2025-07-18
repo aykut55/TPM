@@ -3401,7 +3401,9 @@ void clearStringstream(std::stringstream& ss)
 #include "TpmCrypto.h"
 #include "TpmHash.h"
 #include "TpmHashTest.h"
-//#include "TpmSignature.h"
+#include "TpmSignatureRSA.h"
+#include "TpmSignatureHMAC.h"
+#include "TpmSignatureTest.h"
 
 #define TpmDictionaryAttack_Example             0
 #define TpmClockReader_Example                  0
@@ -3417,6 +3419,7 @@ void clearStringstream(std::stringstream& ss)
 #define TpmHash_Example                         0
 #define TpmSignature_Example                    0
 #define TpmHash_Example                         1
+#define TpmSignature_Example                    1
 
 void Samples::RunAllSamplesAT()
 {
@@ -5473,6 +5476,105 @@ void Samples::RunAllSamplesAT()
         tester.SetTpmHash(pTpmHash);
         tester.RunAllTests();
     }
+#endif
+
+#if TpmSignature_Example
+    CTpmSignature* pTpmSignature = new CTpmSignatureRSA(pTpmSharedDevice);
+    {
+        pTpmSignature->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmSignature->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM Clock Reader." << std::endl;
+            return;
+        }
+
+        if (!pTpmSignature->GenerateKeyPair())  // GenerateKeyPairEx(2048, TPM_ALG_ID::SHA256, 65537, auth))
+        {
+            std::cerr << "Failed to GenerateKeyPair." << std::endl;
+            return;
+        }
+/*
+        // veya
+
+        std::vector<BYTE> auth = { '1', '2', '3', '4' };
+        if (!pTpmSignature->GenerateKeyPairEx(2048, TPM_ALG_ID::SHA256, 65537, auth)) 
+        {
+            std::cerr << "Failed to GenerateKeyPair." << std::endl;
+            return;
+        }
+
+        // veya
+
+        std::string password = "1234";
+        std::vector<BYTE> auth(password.begin(), password.end());
+        if (!pTpmSignature->GenerateKeyPairEx(2048, TPM_ALG_ID::SHA256, 65537, auth))
+        {
+            std::cerr << "Failed to GenerateKeyPair." << std::endl;
+            return;
+        }
+*/
+        CTpmSignatureTest tester;
+        tester.SetTpmSignature(pTpmSignature);
+        tester.RunAllTests();
+    }
+    delete pTpmSignature;
+
+    pTpmSignature = new CTpmSignatureHMAC(pTpmSharedDevice);
+    {
+        pTpmSignature->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmSignature->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM Clock Reader." << std::endl;
+            return;
+        }
+
+        if (!pTpmSignature->GenerateKeyPair())  // GenerateKeyPairEx(2048, TPM_ALG_ID::SHA256, 65537, auth))
+        {
+            std::cerr << "Failed to GenerateKeyPair." << std::endl;
+            return;
+        }
+        /*
+                // veya
+
+                std::vector<BYTE> auth = { '1', '2', '3', '4' };
+                if (!pTpmSignature->GenerateKeyPairEx(0, TPM_ALG_ID::SHA256, 0, auth))
+                {
+                    std::cerr << "Failed to GenerateKeyPair." << std::endl;
+                    return;
+                }
+
+                // veya
+
+                std::string password = "1234";
+                std::vector<BYTE> auth(password.begin(), password.end());
+                if (!pTpmSignature->GenerateKeyPairEx(2048, TPM_ALG_ID::SHA256, 65537, auth))
+                {
+                    std::cerr << "Failed to GenerateKeyPair." << std::endl;
+                    return;
+                }
+        */
+        CTpmSignatureTest tester;
+        tester.SetTpmSignature(pTpmSignature);
+        tester.TestHmacSignOnly();
+    }
+#endif
+
+#if TpmSignature_Example
+    delete pTpmSignature;
 #endif
 
 #if TpmHash_Example

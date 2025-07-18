@@ -61,6 +61,15 @@
     <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHashTest.cpp">
       <Filter>Src\Tpm\TpmSecurity\TpmHash</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureRSA\TpmSignatureRSA.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureRSA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC\TpmSignatureHMAC.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureTest.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmSignature</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Samples.h" />
@@ -119,6 +128,15 @@
     </ClInclude>
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmHash\TpmHashTest.h">
       <Filter>Src\Tpm\TpmSecurity\TpmHash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureRSA\TpmSignatureRSA.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureRSA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC\TpmSignatureHMAC.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureTest.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmSignature</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -217,6 +235,12 @@
     </Filter>
     <Filter Include="Src\Tpm\TpmDictionaryAttack">
       <UniqueIdentifier>{624d789a-f704-434f-b8d6-4c788353ba95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureRSA">
+      <UniqueIdentifier>{ed1374ae-952a-4807-8278-3849d8630391}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC">
+      <UniqueIdentifier>{2c056174-0a47-4685-9cf8-cd1a7822cadf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
