@@ -261,7 +261,8 @@ bool CTpmCrypto::EncryptDecryptInternal(const std::vector<BYTE>& inData, std::ve
             return false;
         }
 
-        //TPM2B_IV iv(16); // 16-byte null IV
+        // TPM2B_IV iv(16); // 16-byte null IV
+        // iv.buffer = std::vector<BYTE>(16, 0);
         ByteVec iv(16);
         std::fill(iv.begin(), iv.end(), 0);  // Hepsini sıfırla
 
