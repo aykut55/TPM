@@ -3399,6 +3399,8 @@ void clearStringstream(std::stringstream& ss)
 #include "TpmSlotSecurity.h"
 #include "TpmRandom.h"
 #include "TpmCrypto.h"
+#include "TpmCryptoRSA.h"
+#include "TpmCryptoTest.h"
 #include "TpmHash.h"
 #include "TpmHashTest.h"
 #include "TpmSignatureRSA.h"
@@ -4671,6 +4673,36 @@ void Samples::RunAllSamplesAT()
     }
 #endif
     
+
+    CTpmCryptoRSA* pTpmCrypto = new CTpmCryptoRSA(pTpmSharedDevice);
+    {
+        pTpmCrypto->SetLogCallback([](const std::string& msg, bool isError) {
+            if (isError)
+                std::cerr << msg << std::endl;
+            else
+                std::cout << msg << std::endl;
+            }
+        );
+
+        if (!pTpmCrypto->Initialize())
+        {
+            std::cerr << "Failed to initialize TPM Clock Reader." << std::endl;
+            return;
+        }
+
+        if (!pTpmCrypto->GenerateKeyPair())
+        {
+            std::cerr << "Failed to GenerateKeyPair." << std::endl;
+            return;
+        }
+
+        CTpmCryptoTest tester;
+        tester.SetTpmCrypto(pTpmCrypto);
+        tester.RunAllTests();
+    }
+
+
+
 #if TpmCrypto_Example
     CTpmCrypto* pTpmCrypto = new CTpmCrypto(pTpmSharedDevice);
     {

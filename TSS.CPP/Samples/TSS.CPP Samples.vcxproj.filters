@@ -70,6 +70,15 @@
     <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureTest.cpp">
       <Filter>Src\Tpm\TpmSecurity\TpmSignature</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoRSA\TpmCryptoRSA.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoRSA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoAES\TpmCryptoAES.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoAES</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoTest.cpp">
+      <Filter>Src\Tpm\TpmSecurity\TpmCrypto</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Samples.h" />
@@ -137,6 +146,15 @@
     </ClInclude>
     <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureTest.h">
       <Filter>Src\Tpm\TpmSecurity\TpmSignature</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoRSA\TpmCryptoRSA.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoRSA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoAES\TpmCryptoAES.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoAES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoTest.h">
+      <Filter>Src\Tpm\TpmSecurity\TpmCrypto</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +259,12 @@
     </Filter>
     <Filter Include="Src\Tpm\TpmSecurity\TpmSignature\TpmSignatureHMAC">
       <UniqueIdentifier>{2c056174-0a47-4685-9cf8-cd1a7822cadf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoRSA">
+      <UniqueIdentifier>{0623a139-a3ee-4471-97bd-3e03579faf2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tpm\TpmSecurity\TpmCrypto\TpmCryptoAES">
+      <UniqueIdentifier>{a21b20ab-bfc0-4478-8255-2a595c95b8a0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
